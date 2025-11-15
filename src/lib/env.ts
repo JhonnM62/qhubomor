@@ -1,0 +1,10 @@
+export const env = {
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || "",
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || "",
+  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || "",
+  PROMO_CODE_PREFIX: process.env.PROMO_CODE_PREFIX || "QHUBO",
+  SOCIAL_FACEBOOK_URL: process.env.SOCIAL_FACEBOOK_URL || "",
+  SOCIAL_INSTAGRAM_URL: process.env.SOCIAL_INSTAGRAM_URL || "",
+  SOCIAL_TIKTOK_URL: process.env.SOCIAL_TIKTOK_URL || "",
+  GAME_DAILY_LIMIT: Number(process.env.GAME_DAILY_LIMIT || 5),
+};

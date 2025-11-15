@@ -1,0 +1,248 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  name            String
+  email           String   @unique
+  emailVerified   DateTime?
+  image           String?
+  dob             DateTime
+  passwordHash    String?
+  facebookUrl     String?
+  instagramUrl    String?
+  tiktokUrl       String?
+  createdAt       DateTime @default(now())
+  roleId          String?
+  blocked         Boolean  @default(false)
+
+  accounts        Account[]
+  sessions        Session[]
+
+  socialProofs    SocialProof[]
+  gameProgress    GameProgress?
+  promoCodes      PromoCode[]
+  gameAttempts    GameAttempt[]
+
+  role            Role?     @relation(fields: [roleId], references: [id])
+
+  bingoBoard      BingoBoard?
+  bingoParticipants BingoParticipant[]
+  bingoWinners   BingoWinner[]
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+enum SocialPlatform {
+  FACEBOOK
+  INSTAGRAM
+  TIKTOK
+}
+
+model SocialProof {
+  id             String         @id @default(cuid())
+  userId         String
+  platform       SocialPlatform
+  screenshotPath String
+  verified       Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+}
+
+model GameProgress {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  game1Completed   Boolean  @default(false)
+  game2Completed   Boolean  @default(false)
+  game3Completed   Boolean  @default(false)
+  game4Completed   Boolean  @default(false)
+  game5Completed   Boolean  @default(false)
+  totalWins        Int      @default(0)
+  completedAt      DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum PrizeType {
+  DISCOUNT_15
+  DISCOUNT_50
+  DISCOUNT_100
+  GRANIZADO_8OZ
+}
+
+model PromoCode {
+  id           String    @id @default(cuid())
+  code         String    @unique
+  qrData       String
+  prizeType    PrizeType
+  userId       String
+  generatedAt  DateTime  @default(now())
+  expiresAt    DateTime?
+  redeemed     Boolean   @default(false)
+  redeemedAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bingoWinner BingoWinner?
+}
+
+model GameAttempt {
+  id      String   @id @default(cuid())
+  userId  String
+  game    String
+  date    DateTime
+  used    Int      @default(0)
+  limit   Int      @default(5)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, game, date])
+}
+
+model BingoMatch {
+  id         String   @id @default(cuid())
+  createdAt  DateTime @default(now())
+  startedAt  DateTime?
+  endedAt    DateTime?
+  winnerIds  String?
+  calls      String?
+  configId   String?
+  status     BingoStatus @default(EN_ESPERA)
+
+  participants BingoParticipant[]
+}
+
+enum BingoStatus {
+  EN_ESPERA
+  EN_CURSO
+  FINALIZADA
+}
+
+model BingoMessage {
+  id        String   @id @default(cuid())
+  matchId   String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Role {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  users     User[]
+}
+
+model BingoParticipant {
+  id        String   @id @default(cuid())
+  matchId   String?
+  userId    String
+  joinedAt  DateTime @default(now())
+  active    Boolean  @default(true)
+
+  @@unique([matchId, userId])
+  @@unique([userId, active])
+
+  match     BingoMatch? @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BingoBoard {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  board     String   // JSON 5x5 numbers
+  marks     String   // JSON 5x5 booleans
+  updatedAt DateTime @default(now())
+
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BingoUserProgress {
+  id        String   @id @default(cuid())
+  matchId   String
+  userId    String
+  calls     String   // JSON array of numbers at stop
+  board     String?  // JSON 5x5 numbers
+  marks     String?  // JSON 5x5 booleans
+  stoppedAt DateTime @default(now())
+}
+model BingoWinner {
+  id            String   @id @default(cuid())
+  matchId       String
+  userId        String
+  code          String   @unique
+  qrData        String
+  board         String
+  calls         String
+  createdAt     DateTime @default(now())
+  nombre        String?
+  cedula        String?
+  telefono      String?
+  direccion     String?
+  edadConfirmada Boolean  @default(false)
+  cardPhotoPath String?
+  promoCodeId   String?  @unique
+
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  promoCode     PromoCode? @relation(fields: [promoCodeId], references: [id])
+
+  @@unique([matchId, userId])
+}
+model Report {
+  id        String   @id @default(cuid())
+  userId    String
+  reason    String
+  status    String   @default("OPEN")
+  createdAt DateTime @default(now())
+}
+
+model BingoConfig {
+  id             String   @id @default(cuid())
+  ballsNumber    Int      @default(75)
+  roundDuration  Int      @default(300)
+  prizes         String?  // JSON
+  restrictions   String?  // JSON
+  createdAt      DateTime @default(now())
+}

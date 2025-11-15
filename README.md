@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Qhubomor Casino
 
-## Getting Started
+## Requisitos
+- Node.js 18+
+- Variables de entorno en `.env.local`
 
-First, run the development server:
+## Variables de entorno
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `NEXTAUTH_SECRET`
+- `DATABASE_URL` (SQLite)
+- `PROMO_CODE_PREFIX`
+- `SOCIAL_FACEBOOK_URL`, `SOCIAL_INSTAGRAM_URL`, `SOCIAL_TIKTOK_URL`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Instalación
+1. `npm install`
+2. `npm run db:init`
+3. `npm run dev`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Funcionalidades
+- Registro/login con Google y credenciales
+- Validación de edad (>=18)
+- 5 juegos de azar y progreso
+- Subida de capturas de redes y generación de códigos + QR
+- Panel admin: ver usuarios, promociones y verificar códigos
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Estructura
+- `src/app/(auth)/login` y `register`
+- `src/app/games/*`
+- `src/app/claim`
+- `src/app/admin`
+- `src/app/api/*`
+- `prisma/schema.prisma`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Iconos (Convenciones)
+- Librería: `react-icons` (importación selectiva por paquete: `fa`, `md`, etc.)
+- Tamaño por defecto: `24px` (`size={24}`); se puede ajustar según contexto.
+- Color: hereda `currentColor`; usa clases de Tailwind para theming (`text-primary`, `text-muted-foreground`).
+- Rendimiento: importa solo los iconos utilizados, p.ej. `import { FaGift } from 'react-icons/fa'`.
+- Estilo: preferir contorno/solid acorde al diseño y uso (consistente en toda la app).
