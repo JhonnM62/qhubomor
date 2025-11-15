@@ -119,7 +119,7 @@ export default function BingoClient() {
           <CardTitle>BINGO en vivo</CardTitle>
         </CardHeader>
           <CardContent className="space-y-4">
-          <div className="flex flex-wrap gap-2 justify-center">
+          <div className="flex flex-wrap gap-1 md:gap-2 justify-center">
             {calls.map((n) => {
               const letter = n <= 15 ? 'B' : n <= 30 ? 'I' : n <= 45 ? 'N' : n <= 60 ? 'G' : 'O';
               return (
@@ -128,10 +128,10 @@ export default function BingoClient() {
             })}
           </div>
           {!isAdmin ? (
-            <div className="w-max mx-auto">
+            <div className="w-full md:w-max mx-auto">
               <div className="grid grid-cols-5 gap-1 mb-1">
                 {['B','I','N','G','O'].map((h) => (
-                  <div key={h} className="h-8 w-10 flex items-center justify-center rounded bg-accent text-accent-foreground font-bold">{h}</div>
+                  <div key={h} className="h-7 w-8 md:h-8 md:w-10 flex items-center justify-center rounded bg-accent text-accent-foreground font-bold text-xs md:text-sm">{h}</div>
                 ))}
               </div>
               <div className="grid grid-cols-5 gap-1">
@@ -140,7 +140,7 @@ export default function BingoClient() {
                   return (
                     <div
                       key={`${ri}-${ci}`}
-                      className={`h-10 w-10 flex items-center justify-center rounded border text-sm ${marked ? "bg-primary text-primary-foreground" : "bg-card"}`}
+                      className={`h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded border text-xs md:text-sm ${marked ? "bg-primary text-primary-foreground" : "bg-card"}`}
                       onClick={() => { if (userId !== "guest") { if (n !== 0) userMark(userId, ri, ci, !marked); } else toast.error("Debes iniciar sesión"); }}
                     >{n === 0 ? "★" : n}</div>
                   );
@@ -148,10 +148,10 @@ export default function BingoClient() {
               </div>
             </div>
           ) : (
-            <div className="w-max mx-auto">
+            <div className="w-full md:w-max mx-auto">
               <div className="grid grid-cols-5 gap-1 mb-1">
                 {['B','I','N','G','O'].map((h) => (
-                  <div key={h} className="h-8 w-10 flex items-center justify-center rounded bg-accent text-accent-foreground font-bold">{h}</div>
+                  <div key={h} className="h-7 w-8 md:h-8 md:w-10 flex items-center justify-center rounded bg-accent text-accent-foreground font-bold text-xs md:text-sm">{h}</div>
                 ))}
               </div>
               <div className="grid grid-cols-5 gap-1">
@@ -162,7 +162,7 @@ export default function BingoClient() {
                     const called = calls.includes(n);
                     const letter = c === 0 ? 'B' : c === 1 ? 'I' : c === 2 ? 'N' : c === 3 ? 'G' : 'O';
                     return (
-                      <div key={`${letter}-${n}`} className={`h-8 w-10 rounded flex items-center justify-center text-xs ${called ? 'bg-primary text-primary-foreground' : 'bg-card border'}`}>{letter}-{n}</div>
+                      <div key={`${letter}-${n}`} className={`h-7 w-8 md:h-8 md:w-10 rounded flex items-center justify-center text-[11px] md:text-xs ${called ? 'bg-primary text-primary-foreground' : 'bg-card border'}`}>{letter}-{n}</div>
                     );
                   })
                 ))}
@@ -172,7 +172,7 @@ export default function BingoClient() {
           {countdown !== null && !startedAt && (
             <div className="text-center text-sm text-muted-foreground">El juego iniciará en {Math.floor((countdown ?? 0)/60)}:{String((countdown ?? 0)%60).padStart(2,'0')}</div>
           )}
-          <div className="flex gap-2 justify-center">
+          <div className="flex flex-wrap gap-2 justify-center">
             {!isAdmin && (
               <Button
                 onClick={() => { if (userId !== "guest") { claim(userId); } else { toast.error("Debes iniciar sesión"); } }}

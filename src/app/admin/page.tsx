@@ -25,12 +25,12 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-4 grid gap-4">
+    <div className="max-w-6xl mx-auto p-3 md:p-4 grid gap-4">
       <Card>
         <CardHeader>
           <CardTitle>Verificar código</CardTitle>
         </CardHeader>
-        <CardContent className="flex gap-2">
+        <CardContent className="flex flex-col sm:flex-row gap-2">
           <Input placeholder="Código" value={code} onChange={(e) => setCode(e.target.value)} />
           <Button onClick={verify}>Verificar</Button>
         </CardContent>
@@ -40,7 +40,7 @@ export default function AdminPage() {
         <CardHeader>
           <CardTitle>Usuarios</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -84,7 +84,7 @@ export default function AdminPage() {
         <CardHeader>
           <CardTitle>Promociones</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -112,7 +112,7 @@ export default function AdminPage() {
         <CardHeader>
           <CardTitle>Ganadores de BINGO</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
@@ -142,7 +142,7 @@ export default function AdminPage() {
           <CardHeader>
             <CardTitle>Detalle de ganador</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-2 text-sm">
+          <CardContent className="grid gap-2 text-xs md:text-sm">
             <div>Nombre: {selectedWinner?.nombre || selectedWinner?.user?.name}</div>
             <div>Cédula: {selectedWinner?.cedula || ""}</div>
             <div>Teléfono: {selectedWinner?.telefono || ""}</div>
@@ -162,7 +162,7 @@ export default function AdminPage() {
             <div className="mt-4">
               <div className="grid grid-cols-5 gap-1 mb-1">
                 {["B","I","N","G","O"].map((h) => (
-                  <div key={h} className="h-8 w-10 flex items-center justify-center rounded bg-accent text-accent-foreground font-bold">{h}</div>
+                  <div key={h} className="h-7 w-8 md:h-8 md:w-10 flex items-center justify-center rounded bg-accent text-accent-foreground font-bold text-xs md:text-sm">{h}</div>
                 ))}
               </div>
               <div className="grid grid-cols-5 gap-1">
@@ -170,7 +170,7 @@ export default function AdminPage() {
                   const calls: number[] = selectedWinner?.calls ? JSON.parse(selectedWinner.calls) : [];
                   const called = n === 0 || calls.includes(n);
                   return (
-                    <div key={`${ri}-${ci}`} className={`h-10 w-10 flex items-center justify-center rounded border text-sm ${called ? "bg-primary text-primary-foreground" : "bg-card"}`}>{n === 0 ? "★" : n}</div>
+                    <div key={`${ri}-${ci}`} className={`h-8 w-8 md:h-10 md:w-10 flex items-center justify-center rounded border text-xs md:text-sm ${called ? "bg-primary text-primary-foreground" : "bg-card"}`}>{n === 0 ? "★" : n}</div>
                   );
                 }))}
               </div>

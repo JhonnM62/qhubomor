@@ -37,12 +37,12 @@ export default function AdminDashboard() {
     return () => clearInterval(t);
   }, [startAt]);
   return (
-    <div className="max-w-6xl mx-auto p-6 grid gap-6">
+    <div className="max-w-6xl mx-auto p-3 md:p-6 grid gap-6">
       <Card>
         <CardHeader>
           <CardTitle>Métricas</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           <div className="rounded border p-3">
             <div className="text-xs text-muted-foreground">Usuarios</div>
             <div className="text-2xl font-bold">{users?.users?.length ?? 0}</div>
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
         <CardHeader>
           <CardTitle>Config Bingo</CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center gap-2">
+        <CardContent className="flex flex-col sm:flex-row items-center gap-2">
           <Input id="balls" defaultValue={cfg?.config?.ballsNumber ?? 75} className="w-24" />
           <Input id="duration" defaultValue={cfg?.config?.roundDuration ?? 300} className="w-32" />
           <Button onClick={async () => {

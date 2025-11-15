@@ -11,25 +11,25 @@ export default function Header() {
   const isAdmin = (data as any)?.role === "ADMIN";
   return (
     <header className="border-b bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="max-w-6xl mx-auto flex h-14 items-center justify-between px-4">
+      <div className="max-w-6xl mx-auto flex h-16 md:h-14 items-center justify-between px-3 md:px-4">
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <FaGift size={24} className="text-primary" />
-          <span>Qhubomor Casino</span>
+          <FaGift size={20} className="text-primary md:size-6" />
+          <span className="text-sm md:text-base">Qhubomor Casino</span>
         </Link>
-        <nav className="flex items-center gap-4 text-sm">
+        <nav className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm justify-end">
           <Link href="/games" className="flex items-center gap-1 hover:underline">
-            <FaGamepad size={24} className="text-primary" />
+            <FaGamepad size={20} className="text-primary md:size-6" />
             <span>Juegos</span>
           </Link>
           <Link href="/claim" className="flex items-center gap-1 hover:underline">
-            <FaQrcode size={24} className="text-primary" />
+            <FaQrcode size={20} className="text-primary md:size-6" />
             <span>Reclamar</span>
           </Link>
           {!isLoggedIn && <Link href="/register" className="hover:underline">Registro</Link>}
           {!isLoggedIn && <Link href="/login" className="hover:underline">Login</Link>}
           {isAdmin && <Link href="/admin" className="hover:underline">Admin</Link>}
           {isAdmin && <Link href="/admin/dashboard" className="hover:underline">Dashboard</Link>}
-          <Button asChild size="sm">
+          <Button asChild size="sm" className="hidden xs:inline-flex">
             <Link href="/games">Jugar ahora</Link>
           </Button>
           <UserNav />
