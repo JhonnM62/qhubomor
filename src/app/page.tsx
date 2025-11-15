@@ -8,10 +8,19 @@ import { prisma } from "@/lib/prisma";
 import BingoLobby from "@/components/games/BingoLobby";
 
 export default async function Home() {
-  const totalGenerated = await prisma.promoCode.count();
-  const totalRedeemed = await prisma.promoCode.count({ where: { redeemed: true } });
-  const last24h = await prisma.promoCode.count({ where: { redeemed: true, redeemedAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } } });
-  const usersCount = await prisma.user.count({ where: { role: { name: { not: "ADMIN" } } } });
+  const hasDb = !!process.env.DATABASE_URL;
+  let totalGenerated = 0;
+  let totalRedeemed = 0;
+  let last24h = 0;
+  let usersCount = 0;
+  if (hasDb) {
+    try {
+      totalGenerated = await prisma.promoCode.count();
+      totalRedeemed = await prisma.promoCode.count({ where: { redeemed: true } });
+      last24h = await prisma.promoCode.count({ where: { redeemed: true, redeemedAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } } });
+      usersCount = await prisma.user.count({ where: { role: { name: { not: "ADMIN" } } } });
+    } catch {}
+  }
   const pot = 200000 + usersCount * 2000;
   return (
     <div className="relative">
