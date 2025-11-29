@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { Google } from "@/components/ui/icons";
 
 const schema = z.object({
   name: z.string().min(3),
@@ -62,7 +63,10 @@ export default function RegisterPage() {
             <Button disabled={loading} type="submit" className="w-full">Crear cuenta</Button>
           </form>
           <div className="mt-4">
-            <Button variant="outline" className="w-full" onClick={() => signIn("google")}>Registro con Google</Button>
+            <Button variant="outline" className="w-full gap-2" onClick={() => signIn("google")}>
+              <Google className="w-5 h-5" />
+              Registro con Google
+            </Button>
           </div>
         </CardContent>
       </Card>

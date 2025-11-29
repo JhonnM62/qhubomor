@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { signIn } from "next-auth/react";
 import { toast } from "sonner";
 import Link from "next/link";
+import { Google } from "@/components/ui/icons";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -46,7 +47,10 @@ export default function LoginPage() {
             </Button>
           </div>
           <div className="mt-4">
-            <Button variant="outline" className="w-full" onClick={() => signIn("google", { callbackUrl: "/games" })}>Entrar con Google</Button>
+            <Button variant="outline" className="w-full gap-2" onClick={() => signIn("google", { callbackUrl: "/games" })}>
+              <Google className="w-5 h-5" />
+              Entrar con Google
+            </Button>
           </div>
         </CardContent>
       </Card>
