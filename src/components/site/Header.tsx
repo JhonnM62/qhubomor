@@ -19,13 +19,13 @@ export default function Header() {
   return (
     <header className="border-b bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="max-w-6xl mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" className="flex items-center gap-2 -ml-4">
           <div className="relative w-40 h-12">
             <Image
               src="/images/logohorizontal.png"
               alt="Q'hubo Mor Logo"
               fill
-              className="object-contain"
+              className="object-contain drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]"
               priority
             />
           </div>
