@@ -34,11 +34,11 @@ export default function QrCodeGenerator({ value, size = 200, showDownload = fals
           level="H" 
           includeMargin={true}
           imageSettings={{
-            src: "/images/favicon.ico",
+            src: "/images/logosinfondo.png",
             x: undefined,
             y: undefined,
-            height: size * 0.2,
-            width: size * 0.2,
+            height: size * 0.3,
+            width: size * 0.3,
             excavate: true,
           }}
         />
