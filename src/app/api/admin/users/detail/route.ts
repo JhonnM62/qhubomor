@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   const user = await prisma.user.findUnique({ where: { id }, include: { role: true } });
   const progress = await prisma.gameProgress.findUnique({ where: { userId: id } });
   const attempts = await prisma.gameAttempt.findMany({ where: { userId: id } });
-  const promos = await prisma.promoCode.findMany({ where: { userId: id }, orderBy: { generatedAt: "desc" } });
-  const reports = await prisma.report.findMany({ where: { userId: id }, orderBy: { createdAt: "desc" } });
-  return NextResponse.json({ user, progress, attempts, promos, reports });
+  const promos = await prisma.promoCode.findMany({ where: { userId: id }, orderBy: { expiresAt: "desc" } });
+  // const reports = await prisma.report.findMany({ where: { userId: id }, orderBy: { createdAt: "desc" } });
+  return NextResponse.json({ user, progress, attempts, promos, reports: [] });
 }

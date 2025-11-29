@@ -92,6 +92,13 @@ enum SocialPlatform {
   TIKTOK
 }
 
+enum PrizeType {
+  DISCOUNT_15
+  DISCOUNT_50
+  DISCOUNT_100
+  GRANIZADO_8OZ
+}
+
 model SocialProof {
   id             String         @id @default(cuid())
   userId         String
@@ -116,6 +123,8 @@ model GameProgress {
   canClaimPrize    Boolean  @default(false)
   prizeClaimed     Boolean  @default(false)
   claimedAt        DateTime?
+  totalWins        Int      @default(0)
+  completedAt      DateTime?
 
   bingoUserProgress BingoUserProgress?
 
@@ -129,16 +138,24 @@ model PromoCode {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   redeemed  Boolean  @default(false)
+  redeemedAt DateTime?
+  prizeType PrizeType @default(DISCOUNT_15)
+  qrData    String    @default("")
 }
 
 model GameAttempt {
   id        String   @id @default(cuid())
   userId    String
-  gameName  String
-  won       Boolean
-  timestamp DateTime @default(now())
+  game      String
+  date      DateTime
+  used      Int      @default(0)
+  limit     Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, game, date], name: "userId_game_date")
 }
 
 // Modelos para Bingo
@@ -150,6 +167,10 @@ model BingoConfig {
   winningPatterns String   @default("[]") // JSON array con patrones ganadores (L, FULL_HOUSE, etc)
   
   // Configuración del juego
+  ballsNumber     Int      @default(75)
+  roundDuration   Int      @default(300)
+  prizes          String?  // JSON string
+  restrictions    String?  // JSON string
   startTime       DateTime?
   endTime         DateTime?
   
@@ -184,6 +205,7 @@ model BingoBoard {
   id        String   @id @default(cuid())
   userId    String   @unique
   boardData String   @default("[]") // JSON string representing the board structure (5x5)
+  marks     String   @default("[]") // JSON string representing marks (5x5 boolean)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

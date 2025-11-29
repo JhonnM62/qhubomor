@@ -25,6 +25,8 @@ export async function POST() {
   const prizeType = types[Math.floor(Math.random() * types.length)];
   const code = randomCode(env.PROMO_CODE_PREFIX);
   const qrData = JSON.stringify({ code, prizeType, userId });
-  const promo = await prisma.promoCode.create({ data: { userId, code, prizeType, qrData } });
+  const expiresAt = new Date();
+  expiresAt.setDate(expiresAt.getDate() + 30); // 30 days validity
+  const promo = await prisma.promoCode.create({ data: { userId, code, prizeType, qrData, expiresAt } });
   return NextResponse.json({ ok: true, promo });
 }

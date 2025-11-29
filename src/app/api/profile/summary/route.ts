@@ -9,6 +9,6 @@ export async function GET() {
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true, name: true, email: true, image: true, role: { select: { name: true } } } });
   const progress = await prisma.gameProgress.findUnique({ where: { userId } });
   const proofs = await prisma.socialProof.findMany({ where: { userId } });
-  const promos = await prisma.promoCode.findMany({ where: { userId }, orderBy: { generatedAt: "desc" } });
+  const promos = await prisma.promoCode.findMany({ where: { userId }, orderBy: { expiresAt: "desc" } });
   return NextResponse.json({ user, progress, proofs, promos });
 }

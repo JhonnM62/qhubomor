@@ -54,16 +54,16 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     ioInstance.on("connection", async (socket) => {
       try {
         if (!state.started && !scheduledStartAt) {
-          const upcoming = await prisma.bingoMatch.findFirst({ where: { startedAt: { gt: new Date() }, endedAt: null }, orderBy: { createdAt: "desc" } });
-          if (upcoming?.startedAt) {
-            scheduledStartAt = upcoming.startedAt.getTime();
+          const upcoming = await prisma.bingoConfig.findFirst({ where: { startTime: { gt: new Date() }, status: "WAITING" }, orderBy: { createdAt: "desc" } });
+          if (upcoming?.startTime) {
+            scheduledStartAt = upcoming.startTime.getTime();
             globalAny.bingo_scheduledStartAt = scheduledStartAt;
             state.matchId = upcoming.id;
             socket.emit("prepare", { startAt: scheduledStartAt });
           }
         }
         if (!scheduledStartAt && !state.started) {
-          const active = await prisma.bingoMatch.findFirst({ where: { startedAt: { lte: new Date() }, endedAt: null }, orderBy: { createdAt: "desc" } });
+          const active = await prisma.bingoConfig.findFirst({ where: { status: "PLAYING" }, orderBy: { createdAt: "desc" } });
           if (active) {
             state.started = true;
             state.matchId = active.id;
@@ -78,7 +78,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         socket.emit("started", { matchId: state.matchId });
       }
       try {
-        const active = await prisma.bingoParticipant.findMany({ where: state.matchId ? { active: true, matchId: state.matchId } : { active: true }, include: { user: { include: { role: true } } } });
+        const active = await prisma.bingoParticipant.findMany({ include: { user: { include: { role: true } } } });
         ioInstance.emit("lobby", { players: active.map((p) => ({ id: p.userId, name: p.user?.name ?? "", image: p.user?.image, role: p.user?.role?.name })) });
       } catch {}
       socket.on("register", async (payload: { id: string; name: string; image?: string }) => {
@@ -106,12 +106,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         }
         if (role !== "ADMIN" && state.matchId) {
           try {
-            const existing = await prisma.bingoParticipant.findFirst({ where: { matchId: state.matchId as string, userId: payload.id } });
+            const existing = await prisma.bingoParticipant.findFirst({ where: { userId: payload.id } });
             if (!existing) {
-              await prisma.bingoParticipant.create({ data: { userId: payload.id, matchId: state.matchId as string, active: true } });
+              await prisma.bingoParticipant.create({ data: { userId: payload.id } });
               console.log("[bingo] participant linked", payload.id, state.matchId);
             }
-            const active = await prisma.bingoParticipant.findMany({ where: state.matchId ? { active: true, matchId: state.matchId as string } : { active: true }, include: { user: { include: { role: true } } } });
+            const active = await prisma.bingoParticipant.findMany({ include: { user: { include: { role: true } } } });
             ioInstance.emit("lobby", { players: active.map((p) => ({ id: p.userId, name: p.user?.name ?? "", image: p.user?.image, role: p.user?.role?.name })) });
           } catch (e) { console.log("[bingo] participant create error", e); }
         }
@@ -128,15 +128,15 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
           if (!u?.role || u.role.name !== "ADMIN") return;
         }
         state.started = true; state.calls = [];
-        const match = await prisma.bingoMatch.create({ data: { calls: JSON.stringify([]), startedAt: new Date(), status: 'EN_CURSO' } });
+        const match = await prisma.bingoConfig.create({ data: { drawnNumbers: JSON.stringify([]), startTime: new Date(), status: 'PLAYING' } });
         state.matchId = match.id;
         console.log("[bingo] match created", match.id);
         ioInstance.emit("started", { matchId: match.id });
         for (const p of Object.values(state.players)) {
           if (p.role === "ADMIN") continue;
-          const exists = await prisma.bingoParticipant.findFirst({ where: { matchId: match.id, userId: p.id } });
+          const exists = await prisma.bingoParticipant.findFirst({ where: { userId: p.id } });
           if (!exists) {
-            await prisma.bingoParticipant.create({ data: { matchId: match.id, userId: p.id } }).catch(() => {});
+            await prisma.bingoParticipant.create({ data: { userId: p.id } }).catch(() => {});
             console.log("[bingo] participant added", p.id, match.id);
           }
         }
@@ -166,19 +166,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         const full = p.board.every((row, r) => row.every((n, c) => n === 0 || !!p.marks[r][c]));
         if (full) {
           try {
-            const code = `BINGO-${Date.now()}-${Math.random().toString(36).slice(2,8).toUpperCase()}`;
-            const qrData = `BINGO|${p.id}|${state.matchId}|${code}`;
-            const winner = await prisma.bingoWinner.upsert({
-              where: { matchId_userId: { matchId: state.matchId as string, userId: p.id } },
-              update: { code, qrData, board: JSON.stringify(p.board), calls: JSON.stringify(state.calls) },
-              create: { matchId: state.matchId as string, userId: p.id, code, qrData, board: JSON.stringify(p.board), calls: JSON.stringify(state.calls) },
+            await prisma.bingoWinner.create({
+              data: { userId: p.id, pattern: "FULL_HOUSE", claimed: true }
             });
-            const promo = await prisma.promoCode.upsert({
-              where: { code },
-              update: { qrData, userId: p.id },
-              create: { code, qrData, prizeType: 'DISCOUNT_100', userId: p.id },
-            });
-            await prisma.bingoWinner.update({ where: { id: winner.id }, data: { promoCodeId: promo.id } });
           } catch {}
           ioInstance.emit("winner", { id: p.id, name: p.name });
         } else {
@@ -195,7 +185,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         }
         state.started = false;
         if (state.matchId) {
-          await prisma.bingoMatch.update({ where: { id: state.matchId }, data: { endedAt: new Date(), calls: JSON.stringify(state.calls), status: 'FINALIZADA' } });
+          await prisma.bingoConfig.update({ where: { id: state.matchId }, data: { endTime: new Date(), drawnNumbers: JSON.stringify(state.calls), status: 'FINISHED' } });
         }
         state.matchId = undefined; state.calls = [];
         ioInstance.emit("ended", { ok: true });
@@ -210,7 +200,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         scheduledStartAt = Date.now() + ms;
         globalAny.bingo_scheduledStartAt = scheduledStartAt;
         state.started = false; state.calls = [];
-        const match = await prisma.bingoMatch.create({ data: { calls: JSON.stringify([]), startedAt: new Date(scheduledStartAt), status: 'EN_ESPERA' } });
+        const match = await prisma.bingoConfig.create({ data: { drawnNumbers: JSON.stringify([]), startTime: new Date(scheduledStartAt), status: 'WAITING' } });
         state.matchId = match.id;
         console.log("[bingo] match scheduled", match.id, new Date(scheduledStartAt).toISOString());
         ioInstance.emit("prepare", { startAt: scheduledStartAt });
@@ -218,15 +208,15 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         const scheduledMatchId = match.id;
         scheduleTimer = setTimeout(async () => {
           state.started = true;
-          await prisma.bingoMatch.update({ where: { id: scheduledMatchId }, data: { startedAt: new Date(), status: 'EN_CURSO' } }).catch(() => {});
+          await prisma.bingoConfig.update({ where: { id: scheduledMatchId }, data: { startTime: new Date(), status: 'PLAYING' } }).catch(() => {});
           ioInstance.emit("started", { matchId: scheduledMatchId });
           console.log("[bingo] started scheduled", scheduledMatchId);
           if (state.matchId) {
             for (const p of Object.values(state.players)) {
               if (p.role === "ADMIN") continue;
-              const exists = await prisma.bingoParticipant.findFirst({ where: { matchId: state.matchId, userId: p.id } });
+              const exists = await prisma.bingoParticipant.findFirst({ where: { userId: p.id } });
               if (!exists) {
-                await prisma.bingoParticipant.create({ data: { matchId: state.matchId, userId: p.id } }).catch(() => {});
+                await prisma.bingoParticipant.create({ data: { userId: p.id } }).catch(() => {});
                 console.log("[bingo] participant added on schedule", p.id, state.matchId);
               }
             }
@@ -240,7 +230,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         const u = await prisma.user.findUnique({ where: { id: payload.adminId }, include: { role: true } });
         if (!u?.role || u.role.name !== "ADMIN") return;
         if (state.matchId) {
-          await prisma.bingoMatch.update({ where: { id: state.matchId }, data: { calls: JSON.stringify(state.calls) } });
+          await prisma.bingoConfig.update({ where: { id: state.matchId }, data: { drawnNumbers: JSON.stringify(state.calls) } });
           ioInstance.emit("saved", { ok: true });
         }
       });
@@ -257,7 +247,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
             await prisma.bingoBoard.upsert({
               where: { userId: p.id },
               update: { marks: JSON.stringify(p.marks), updatedAt: new Date() },
-              create: { userId: p.id, board: JSON.stringify(p.board), marks: JSON.stringify(p.marks) },
+              create: { userId: p.id, boardData: JSON.stringify(p.board), marks: JSON.stringify(p.marks) },
             });
             console.log("[bingo] marks persisted", { userId: p.id, row, col, marked: p.marks[row][col] });
           } catch (e) {
@@ -273,13 +263,13 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         try {
           await prisma.bingoBoard.upsert({
             where: { userId: p.id },
-            update: { board: JSON.stringify(p.board), marks: JSON.stringify(p.marks), updatedAt: new Date() },
-            create: { userId: p.id, board: JSON.stringify(p.board), marks: JSON.stringify(p.marks) },
+            update: { boardData: JSON.stringify(p.board), marks: JSON.stringify(p.marks), updatedAt: new Date() },
+            create: { userId: p.id, boardData: JSON.stringify(p.board), marks: JSON.stringify(p.marks) },
           });
           if (state.matchId && state.started) {
-            const exists = await prisma.bingoParticipant.findFirst({ where: { matchId: state.matchId as string, userId: p.id } });
+            const exists = await prisma.bingoParticipant.findFirst({ where: { userId: p.id } });
             if (!exists) {
-              await prisma.bingoParticipant.create({ data: { matchId: state.matchId as string, userId: p.id } });
+              await prisma.bingoParticipant.create({ data: { userId: p.id } });
               console.log("[bingo] saveBoard participant added", p.id, state.matchId);
             } else {
               console.log("[bingo] saveBoard participant exists", p.id, state.matchId);
@@ -323,10 +313,10 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
       socket.on("player:leave", async (payload: { id: string }) => {
         try {
-          await prisma.bingoParticipant.updateMany({ where: { userId: payload.id, active: true }, data: { active: false } });
-          const active = await prisma.bingoParticipant.findMany({ where: state.matchId ? { active: true, matchId: state.matchId } : { active: true }, include: { user: { include: { role: true } } } });
+          // await prisma.bingoParticipant.updateMany({ where: { userId: payload.id, active: true }, data: { active: false } });
+          const active = await prisma.bingoParticipant.findMany({ include: { user: { include: { role: true } } } });
           ioInstance.emit("lobby", { players: active.map((p) => ({ id: p.userId, name: p.user?.name ?? "", image: p.user?.image, role: p.user?.role?.name })) });
-          console.log("[bingo] participant set inactive", payload.id);
+          console.log("[bingo] participant left", payload.id);
         } catch (e) { console.log("[bingo] leave error", e); }
       });
       socket.on("player:link", async (payload: { id: string }) => {
@@ -335,22 +325,22 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         if (pl.role === "ADMIN") { console.log("[bingo] link ignored for admin", pl.id); return; }
         if (!state.matchId) { console.log("[bingo] link no match", payload.id); return; }
         try {
-          const exists = await prisma.bingoParticipant.findFirst({ where: { matchId: state.matchId as string, userId: pl.id } });
+          const exists = await prisma.bingoParticipant.findFirst({ where: { userId: pl.id } });
           if (!exists) {
-            await prisma.bingoParticipant.create({ data: { matchId: state.matchId as string, userId: pl.id, active: true } });
+            await prisma.bingoParticipant.create({ data: { userId: pl.id } });
             console.log("[bingo] participant linked by user", pl.id, state.matchId);
           }
-          const active = await prisma.bingoParticipant.findMany({ where: { active: true, matchId: state.matchId as string }, include: { user: { include: { role: true } } } });
+          const active = await prisma.bingoParticipant.findMany({ include: { user: { include: { role: true } } } });
           ioInstance.emit("lobby", { players: active.map((pp) => ({ id: pp.userId, name: pp.user?.name ?? "", image: pp.user?.image, role: pp.user?.role?.name })) });
         } catch (e) { console.log("[bingo] link error", e); }
       });
       socket.on("disconnect", async () => {
         try {
-          const ids = Object.keys(state.players);
-          for (const id of ids) {
-            await prisma.bingoParticipant.updateMany({ where: { userId: id, active: true }, data: { active: false } });
-          }
-          const active = await prisma.bingoParticipant.findMany({ where: state.matchId ? { active: true, matchId: state.matchId } : { active: true }, include: { user: { include: { role: true } } } });
+          // const ids = Object.keys(state.players);
+          // for (const id of ids) {
+          //   await prisma.bingoParticipant.updateMany({ where: { userId: id, active: true }, data: { active: false } });
+          // }
+          const active = await prisma.bingoParticipant.findMany({ include: { user: { include: { role: true } } } });
           ioInstance.emit("lobby", { players: active.map((p) => ({ id: p.userId, name: p.user?.name ?? "", image: p.user?.image, role: p.user?.role?.name })) });
         } catch {}
       });
