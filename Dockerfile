@@ -28,6 +28,7 @@ COPY . .
 
 # Copiar archivo .env generado desde ENV_FILE_CONTENT
 # Este archivo contiene todas las variables necesarias para la compilación
+# Nota: El archivo .env debe ser generado por GitHub Actions antes de construir la imagen
 COPY .env .env
 
 # Deshabilitar telemetría de Next.js
