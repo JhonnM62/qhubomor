@@ -33,14 +33,6 @@ export default function QrCodeGenerator({ value, size = 200, showDownload = fals
           size={size} 
           level="H" 
           includeMargin={true}
-          imageSettings={{
-            src: "/images/logosinfondo.png",
-            x: undefined,
-            y: undefined,
-            height: size * 0.3,
-            width: size * 0.3,
-            excavate: true,
-          }}
         />
       </div>
       {showDownload && (
