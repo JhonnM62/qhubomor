@@ -100,11 +100,11 @@ jobs:
             docker stop $CONTAINER_NAME 2>/dev/null || true
             docker rm $CONTAINER_NAME 2>/dev/null || true
             
-            # Ejecutar nuevo contenedor con puerto 8016
+            # Ejecutar nuevo contenedor con puerto 8050
             echo "Starting new container: $CONTAINER_NAME"
             docker run -d \
               --name $CONTAINER_NAME \
-              -p 8016:8016 \
+              -p 8050:8016 \
               --restart always \
               --env-file ${PROJECT_DIR}/.env \
               $IMAGE_URL
@@ -117,7 +117,7 @@ jobs:
                 
                 # Verificar que el servicio responda
                 echo "Checking service health..."
-                curl -f http://localhost:8016 || echo "Warning: Service might need more time to start"
+                curl -f http://localhost:8050 || echo "Warning: Service might need more time to start"
             else
                 echo "❌ Container failed to start"
                 docker logs $CONTAINER_NAME
