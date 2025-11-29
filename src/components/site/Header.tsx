@@ -1,10 +1,9 @@
 "use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { FaCocktail, FaShareAlt } from "react-icons/fa";
+import { Martini, Share2, Menu } from "@/components/ui/icons";
 import UserNav from "@/components/site/UserNav";
 import { useSession } from "next-auth/react";
-import { Menu } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +19,7 @@ export default function Header() {
     <header className="border-b bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="max-w-6xl mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2 font-semibold">
-          <FaCocktail size={20} className="text-primary md:size-6" />
+          <Martini size={20} className="text-primary md:size-6" />
           <span className="text-lg">Q'hubo Mor</span>
         </Link>
 
@@ -28,7 +27,7 @@ export default function Header() {
         <nav className="hidden md:flex items-center gap-4">
           <Button asChild variant="ghost" size="sm" className="bg-black/40 hover:bg-emerald-900/40 text-white border border-white/10 hover:border-emerald-500/50 rounded-full backdrop-blur-md shadow-lg transition-all duration-300 hover:shadow-emerald-500/20 hover:-translate-y-0.5">
             <Link href="/links" className="flex items-center gap-2 px-4">
-              <FaShareAlt size={14} className="text-emerald-400" />
+              <Share2 size={14} className="text-emerald-400" />
               <span className="font-medium tracking-wide">Redes</span>
             </Link>
           </Button>
@@ -63,7 +62,7 @@ export default function Header() {
             <DropdownMenuContent align="end" className="w-48 bg-background/95 backdrop-blur-md">
               <DropdownMenuItem asChild>
                 <Link href="/links" className="flex items-center gap-2 w-full cursor-pointer">
-                  <FaShareAlt className="h-4 w-4" />
+                  <Share2 className="h-4 w-4" />
                   <span>Redes</span>
                 </Link>
               </DropdownMenuItem>

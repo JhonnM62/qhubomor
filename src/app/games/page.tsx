@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FaPlay } from "react-icons/fa";
+import { Play } from "@/components/ui/icons";
 
 export default function GamesPage() {
   const games = [
@@ -19,7 +19,7 @@ export default function GamesPage() {
           <div className="text-xs md:text-sm text-muted-foreground">Entra a la sala dedicada y juega con otros participantes.</div>
         </div>
         <Button asChild className="h-9 md:h-10 text-sm md:text-base w-full md:w-auto">
-          <a href="/bingo"><FaPlay size={20} className="mr-2" /> Iniciar juego</a>
+          <a href="/bingo"><Play size={20} className="mr-2" /> Iniciar juego</a>
         </Button>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
@@ -31,7 +31,7 @@ export default function GamesPage() {
               </CardHeader>
               <CardContent>
                 <Button className="w-full h-9 md:h-10 text-sm md:text-base" variant="default">
-                  <FaPlay className="mr-2 size-4 md:size-5" />
+                  <Play className="mr-2 size-4 md:size-5" />
                   Jugar ahora
                 </Button>
               </CardContent>

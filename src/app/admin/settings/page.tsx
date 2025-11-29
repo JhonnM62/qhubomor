@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { FaFacebook, FaInstagram, FaTiktok, FaWhatsapp, FaGlobe, FaUpload, FaImage } from "react-icons/fa";
+import { Facebook, Instagram, Music, MessageCircle, Globe, Upload, Image as ImageIcon } from "@/components/ui/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function SiteSettingsPage() {
@@ -148,7 +148,7 @@ export default function SiteSettingsPage() {
                           "Subiendo..." 
                         ) : (
                           <>
-                            <FaUpload className="mr-2" /> Subir Logo
+                            <Upload className="mr-2" /> Subir Logo
                           </>
                         )}
                       </Button>
@@ -165,7 +165,7 @@ export default function SiteSettingsPage() {
                       <p>Si prefieres usar una URL externa, pégala abajo:</p>
                     </div>
                     <div className="relative">
-                      <FaImage className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                      <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                       <Input 
                         name="logoUrl" 
                         value={config.logoUrl || ""} 
@@ -188,7 +188,7 @@ export default function SiteSettingsPage() {
             <CardContent className="space-y-4">
               <div className="grid gap-2">
                 <Label className="flex items-center gap-2">
-                  <FaFacebook className="text-blue-600" /> Facebook URL
+                  <Facebook className="text-blue-600" /> Facebook URL
                 </Label>
                 <Input 
                   name="facebookUrl" 
@@ -200,7 +200,7 @@ export default function SiteSettingsPage() {
               
               <div className="grid gap-2">
                 <Label className="flex items-center gap-2">
-                  <FaInstagram className="text-pink-600" /> Instagram URL
+                  <Instagram className="text-pink-600" /> Instagram URL
                 </Label>
                 <Input 
                   name="instagramUrl" 
@@ -212,7 +212,7 @@ export default function SiteSettingsPage() {
 
               <div className="grid gap-2">
                 <Label className="flex items-center gap-2">
-                  <FaTiktok className="text-black dark:text-white" /> TikTok URL
+                  <Music className="text-black dark:text-white" /> TikTok URL
                 </Label>
                 <Input 
                   name="tiktokUrl" 
@@ -224,7 +224,7 @@ export default function SiteSettingsPage() {
 
               <div className="grid gap-2">
                 <Label className="flex items-center gap-2">
-                  <FaWhatsapp className="text-green-500" /> WhatsApp URL
+                  <MessageCircle className="text-green-500" /> WhatsApp URL
                 </Label>
                 <Input 
                   name="whatsappUrl" 
@@ -236,7 +236,7 @@ export default function SiteSettingsPage() {
 
               <div className="grid gap-2">
                 <Label className="flex items-center gap-2">
-                  <FaGlobe className="text-purple-600" /> Sitio Web Oficial
+                  <Globe className="text-purple-600" /> Sitio Web Oficial
                 </Label>
                 <Input 
                   name="websiteUrl" 

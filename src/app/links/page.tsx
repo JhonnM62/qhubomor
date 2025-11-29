@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { FaFacebook, FaInstagram, FaTiktok, FaWhatsapp, FaGlobe } from "react-icons/fa";
+import { Facebook, Instagram, Music, MessageCircle, Globe } from "@/components/ui/icons";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -61,31 +61,31 @@ export default function LinksPage() {
     {
       name: "Facebook",
       url: config?.facebookUrl,
-      icon: <FaFacebook className="w-6 h-6" />,
+      icon: <Facebook className="w-6 h-6" />,
       color: "bg-blue-600 hover:bg-blue-700",
     },
     {
       name: "Instagram",
       url: config?.instagramUrl,
-      icon: <FaInstagram className="w-6 h-6" />,
+      icon: <Instagram className="w-6 h-6" />,
       color: "bg-pink-600 hover:bg-pink-700",
     },
     {
       name: "TikTok",
       url: config?.tiktokUrl,
-      icon: <FaTiktok className="w-6 h-6" />,
+      icon: <Music className="w-6 h-6" />,
       color: "bg-black hover:bg-gray-900",
     },
     {
       name: "WhatsApp",
       url: config?.whatsappUrl,
-      icon: <FaWhatsapp className="w-6 h-6" />,
+      icon: <MessageCircle className="w-6 h-6" />,
       color: "bg-green-500 hover:bg-green-600",
     },
     {
       name: "Sitio Web Oficial",
       url: config?.websiteUrl || "/",
-      icon: <FaGlobe className="w-6 h-6" />,
+      icon: <Globe className="w-6 h-6" />,
       color: "bg-purple-600 hover:bg-purple-700",
     },
   ].filter(link => link.url); // Only show links that have a URL configured

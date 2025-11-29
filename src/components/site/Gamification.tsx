@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FaStar, FaTicketAlt } from "react-icons/fa";
+import { Star, Ticket } from "@/components/ui/icons";
 
 export default function Gamification() {
   return (
@@ -11,7 +11,7 @@ export default function Gamification() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="flex items-center gap-2">
-            <FaStar size={24} className="text-primary" />
+            <Star size={24} className="text-primary" />
             <CardTitle className="text-base">Bono de bienvenida</CardTitle>
           </CardHeader>
           <CardContent>
@@ -20,7 +20,7 @@ export default function Gamification() {
         </Card>
         <Card>
           <CardHeader className="flex items-center gap-2">
-            <FaTicketAlt size={24} className="text-primary" />
+            <Ticket size={24} className="text-primary" />
             <CardTitle className="text-base">Premio instantáneo</CardTitle>
           </CardHeader>
           <CardContent>

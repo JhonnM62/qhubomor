@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FaDiceSix, FaCompactDisc, FaStar, FaGripHorizontal, FaGamepad } from "react-icons/fa";
+import { Dices, Disc, Star, GripHorizontal, Gamepad2 } from "@/components/ui/icons";
 
 const games = [
-  { href: "/games/dice", title: "Dado", desc: "Lanza y gana con 4+", icon: FaDiceSix },
-  { href: "/games/wheel", title: "Ruleta", desc: "Giros a la suerte", icon: FaCompactDisc },
-  { href: "/games/slots", title: "Tragamonedas", desc: "Combina símbolos", icon: FaStar },
-  { href: "/games/cards", title: "Memoria", desc: "Encuentra pares", icon: FaGripHorizontal },
-  { href: "/games/scratch", title: "Rasca y gana", desc: "Descubre el premio", icon: FaGamepad },
+  { href: "/games/dice", title: "Dado", desc: "Lanza y gana con 4+", icon: Dices },
+  { href: "/games/wheel", title: "Ruleta", desc: "Giros a la suerte", icon: Disc },
+  { href: "/games/slots", title: "Tragamonedas", desc: "Combina símbolos", icon: Star },
+  { href: "/games/cards", title: "Memoria", desc: "Encuentra pares", icon: GripHorizontal },
+  { href: "/games/scratch", title: "Rasca y gana", desc: "Descubre el premio", icon: Gamepad2 },
 ];
 
 export default function FeaturedGames() {

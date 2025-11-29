@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { FaCocktail, FaCalendarAlt, FaMapMarkerAlt, FaGift, FaDice } from "react-icons/fa";
+import { Calendar, MapPin, Gift, Dices } from "@/components/ui/icons";
 import Image from "next/image";
 
 export default function Home() {
@@ -41,11 +41,11 @@ export default function Home() {
           {/* Detalles del Evento */}
           <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 md:gap-6 mt-8 px-4">
             <div className="flex items-center justify-center gap-3 bg-white/10 px-4 py-3 rounded-full backdrop-blur border border-white/20 w-full sm:w-auto">
-              <FaCalendarAlt className="text-yellow-400 w-5 h-5 md:w-6 md:h-6" />
+              <Calendar className="text-yellow-400 w-5 h-5 md:w-6 md:h-6" />
               <span className="text-base md:text-lg font-semibold">20 de Diciembre, 2025</span>
             </div>
             <div className="flex items-center justify-center gap-3 bg-white/10 px-4 py-3 rounded-full backdrop-blur border border-white/20 w-full sm:w-auto">
-              <FaMapMarkerAlt className="text-red-400 w-5 h-5 md:w-6 md:h-6" />
+              <MapPin className="text-red-400 w-5 h-5 md:w-6 md:h-6" />
               <span className="text-sm md:text-lg font-semibold text-center">Mistares 3 casa 182 Diagonal al antiguo asaditos</span>
             </div>
           </div>
@@ -55,7 +55,7 @@ export default function Home() {
         <section className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto w-full">
           <Card className="bg-gradient-to-br from-gray-800 to-gray-900 border-yellow-500/30 shadow-2xl transform hover:scale-105 transition-all duration-300">
             <CardHeader>
-              <FaDice className="w-16 h-16 text-green-500 mx-auto mb-4 animate-pulse" />
+              <Dices className="w-16 h-16 text-green-500 mx-auto mb-4 animate-pulse" />
               <CardTitle className="text-2xl font-bold text-yellow-400">Ruleta de la Suerte</CardTitle>
             </CardHeader>
             <CardContent>
@@ -67,7 +67,7 @@ export default function Home() {
 
           <Card className="bg-gradient-to-br from-gray-800 to-gray-900 border-yellow-500/30 shadow-2xl transform hover:scale-105 transition-all duration-300">
             <CardHeader>
-              <FaGift className="w-16 h-16 text-red-500 mx-auto mb-4 animate-bounce" />
+              <Gift className="w-16 h-16 text-red-500 mx-auto mb-4 animate-bounce" />
               <CardTitle className="text-2xl font-bold text-yellow-400">Premios en Efectivo</CardTitle>
             </CardHeader>
             <CardContent>

@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import useSWR from "swr";
-import { FaCalendarAlt, FaUsers, FaTicketAlt, FaGlassCheers } from "react-icons/fa";
+import { Calendar, Users, Ticket, Martini } from "@/components/ui/icons";
 
 const fetcher = (u: string) => fetch(u).then((r) => r.json());
 
@@ -20,22 +20,22 @@ export default function BingoLobby({ pot, eventDate }: { pot: number; eventDate:
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base md:text-xl">
-          <FaGlassCheers className="text-primary size-5 md:size-6" />
+          <Martini className="text-primary size-5 md:size-6" />
           Gran BINGO — Potencia tus premios
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           <div className="rounded border p-3 flex items-center gap-2">
-            <FaCalendarAlt className="text-primary size-5 md:size-6" />
+            <Calendar className="text-primary size-5 md:size-6" />
             <div className="text-xs md:text-sm">Fecha: <span className="font-medium">{new Date(eventDate).toLocaleDateString("es-CO")}</span></div>
           </div>
           <div className="rounded border p-3 flex items-center gap-2">
-            <FaTicketAlt className="text-primary size-5 md:size-6" />
+            <Ticket className="text-primary size-5 md:size-6" />
             <div className="text-xs md:text-sm">Bote inicial: <span className="font-medium">{potText}</span></div>
           </div>
           <div className="rounded border p-3 flex items-center gap-2">
-            <FaUsers className="text-primary size-5 md:size-6" />
+            <Users className="text-primary size-5 md:size-6" />
             <div className="text-xs md:text-sm">Cada compra suma <span className="font-medium">$2.000</span> al bote</div>
           </div>
         </div>
