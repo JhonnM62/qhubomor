@@ -1,30 +1,31 @@
 "use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { FaCocktail, FaGamepad, FaQrcode, FaShareAlt } from "react-icons/fa";
+import { FaCocktail, FaShareAlt } from "react-icons/fa";
 import UserNav from "@/components/site/UserNav";
 import { useSession } from "next-auth/react";
+import { Menu } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Header() {
   const { data } = useSession();
   const isLoggedIn = !!data?.user;
   const isAdmin = (data as any)?.role === "ADMIN";
   return (
-    <header className="border-b bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="max-w-6xl mx-auto flex h-16 md:h-14 items-center justify-between px-3 md:px-4">
+    <header className="border-b bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+      <div className="max-w-6xl mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2 font-semibold">
           <FaCocktail size={20} className="text-primary md:size-6" />
-          <span className="text-sm md:text-base">Q'hubo Mor</span>
+          <span className="text-lg">Q'hubo Mor</span>
         </Link>
-        <nav className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm justify-end">
-          {/* <Link href="/games" className="flex items-center gap-1 hover:underline">
-            <FaGamepad size={20} className="text-primary md:size-6" />
-            <span>Juegos</span>
-          </Link>
-          <Link href="/claim" className="flex items-center gap-1 hover:underline">
-            <FaQrcode size={20} className="text-primary md:size-6" />
-            <span>Reclamar</span>
-          </Link> */}
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex items-center gap-4">
           <Button asChild variant="ghost" size="sm" className="bg-black/40 hover:bg-emerald-900/40 text-white border border-white/10 hover:border-emerald-500/50 rounded-full backdrop-blur-md shadow-lg transition-all duration-300 hover:shadow-emerald-500/20 hover:-translate-y-0.5">
             <Link href="/links" className="flex items-center gap-2 px-4">
               <FaShareAlt size={14} className="text-emerald-400" />
@@ -33,23 +34,62 @@ export default function Header() {
           </Button>
           
           {!isLoggedIn && (
-            <Button asChild variant="ghost" size="sm" className="bg-black/40 hover:bg-emerald-900/40 text-white border border-white/10 hover:border-emerald-500/50 rounded-full backdrop-blur-md shadow-lg transition-all duration-300 hover:shadow-emerald-500/20 hover:-translate-y-0.5">
-              <Link href="/register" className="px-4 font-medium tracking-wide">Registro</Link>
-            </Button>
+            <>
+              <Button asChild variant="ghost" size="sm" className="bg-black/40 hover:bg-emerald-900/40 text-white border border-white/10 hover:border-emerald-500/50 rounded-full backdrop-blur-md shadow-lg transition-all duration-300 hover:shadow-emerald-500/20 hover:-translate-y-0.5">
+                <Link href="/register" className="px-4 font-medium tracking-wide">Registro</Link>
+              </Button>
+              <Button asChild variant="ghost" size="sm" className="bg-black/40 hover:bg-emerald-900/40 text-white border border-white/10 hover:border-emerald-500/50 rounded-full backdrop-blur-md shadow-lg transition-all duration-300 hover:shadow-emerald-500/20 hover:-translate-y-0.5">
+                <Link href="/login" className="px-4 font-medium tracking-wide">Login</Link>
+              </Button>
+            </>
           )}
           
-          {!isLoggedIn && (
-            <Button asChild variant="ghost" size="sm" className="bg-black/40 hover:bg-emerald-900/40 text-white border border-white/10 hover:border-emerald-500/50 rounded-full backdrop-blur-md shadow-lg transition-all duration-300 hover:shadow-emerald-500/20 hover:-translate-y-0.5">
-              <Link href="/login" className="px-4 font-medium tracking-wide">Login</Link>
-            </Button>
-          )}
-          {isAdmin && <Link href="/admin" className="hover:underline">Admin</Link>}
-          {isAdmin && <Link href="/admin/dashboard" className="hover:underline">Dashboard</Link>}
-          {/* <Button asChild size="sm" className="hidden xs:inline-flex">
-            <Link href="/games">Jugar ahora</Link>
-          </Button> */}
+          {isAdmin && <Link href="/admin" className="hover:underline font-medium text-sm">Admin</Link>}
+          {isAdmin && <Link href="/admin/dashboard" className="hover:underline font-medium text-sm">Dashboard</Link>}
+          
           <UserNav />
         </nav>
+
+        {/* Mobile Navigation */}
+        <div className="flex md:hidden items-center gap-2">
+          <UserNav />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-background/95 backdrop-blur-md">
+              <DropdownMenuItem asChild>
+                <Link href="/links" className="flex items-center gap-2 w-full cursor-pointer">
+                  <FaShareAlt className="h-4 w-4" />
+                  <span>Redes</span>
+                </Link>
+              </DropdownMenuItem>
+              {!isLoggedIn && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link href="/register" className="w-full cursor-pointer">Registro</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/login" className="w-full cursor-pointer">Login</Link>
+                  </DropdownMenuItem>
+                </>
+              )}
+              {isAdmin && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin" className="w-full cursor-pointer">Admin</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin/dashboard" className="w-full cursor-pointer">Dashboard</Link>
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </header>
   );
