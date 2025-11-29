@@ -1,5 +1,4 @@
 "use client";
-"use client";
 import useSWR from "swr";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import Link from "next/link";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
@@ -178,6 +178,16 @@ export default function AdminPage() {
           </CardContent>
         </Card>
       )}
+      <Card>
+        <CardHeader>
+          <CardTitle>Configuración del Sitio</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Button asChild className="w-full">
+            <Link href="/admin/settings">Configurar Enlaces y Redes</Link>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

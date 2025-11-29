@@ -1,38 +1,99 @@
-import FeaturedGames from "@/components/site/FeaturedGames";
-import Prizes from "@/components/site/Prizes";
-import Testimonials from "@/components/site/Testimonials";
-import CTARegister from "@/components/site/CTARegister";
-import StatsBar from "@/components/site/StatsBar";
-import Gamification from "@/components/site/Gamification";
-import { prisma } from "@/lib/prisma";
-import BingoLobby from "@/components/games/BingoLobby";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
+import { FaCocktail, FaCalendarAlt, FaMapMarkerAlt, FaGift, FaDice } from "react-icons/fa";
+import Image from "next/image";
 
-export default async function Home() {
-  const hasDb = !!process.env.DATABASE_URL;
-  let totalGenerated = 0;
-  let totalRedeemed = 0;
-  let last24h = 0;
-  let usersCount = 0;
-  if (hasDb) {
-    try {
-      totalGenerated = await prisma.promoCode.count();
-      totalRedeemed = await prisma.promoCode.count({ where: { redeemed: true } });
-      last24h = await prisma.promoCode.count({ where: { redeemed: true, redeemedAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } } });
-      usersCount = await prisma.user.count({ where: { role: { name: { not: "ADMIN" } } } });
-    } catch {}
-  }
-  const pot = 200000 + usersCount * 2000;
+export default function Home() {
   return (
-    <div className="relative">
-      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background to-muted/40" />
-      <main className="max-w-6xl mx-auto px-6 py-10 grid gap-10">
-        <BingoLobby pot={pot} eventDate="2025-12-13T00:00:00Z" />
-        <StatsBar totalGenerated={totalGenerated} totalRedeemed={totalRedeemed} last24h={last24h} />
-        <FeaturedGames />
-        <Prizes />
-        <Testimonials />
-        <Gamification />
-        <CTARegister />
+    <div className="relative min-h-screen flex flex-col">
+      {/* Hero Section con gradiente animado */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-b from-black via-emerald-950 to-black opacity-95" />
+      
+      <main className="flex-1 max-w-6xl mx-auto px-4 py-12 grid gap-16 text-center text-white relative z-10">
+        
+        {/* Sección Principal del Aniversario */}
+        <section className="space-y-8 animate-in fade-in zoom-in duration-1000 slide-in-from-bottom-10">
+          <div className="mb-4 relative inline-block">
+            <div className="absolute -top-4 -right-4 bg-yellow-500 text-black font-extrabold text-xl w-12 h-12 flex items-center justify-center rounded-full animate-bounce z-20 border-2 border-white shadow-lg">
+              2º
+            </div>
+            <Image
+              src="/images/logosinfondo.png"
+              alt="Q'hubo Mor Logo"
+              width={250}
+              height={250}
+              className="mx-auto animate-pulse drop-shadow-2xl rounded-full mix-blend-screen"
+            />
+          </div>
+          
+          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 drop-shadow-lg">
+            GRAN 2º ANIVERSARIO
+            <br />
+            <span className="text-white">Q'HUBO MOR</span>
+          </h1>
+          
+          <p className="text-xl md:text-3xl text-gray-200 font-light max-w-3xl mx-auto leading-relaxed">
+            Celebra con nosotros una noche inolvidable llena de Granizados, música y premios increíbles.
+          </p>
+
+          {/* Detalles del Evento */}
+          <div className="flex flex-wrap justify-center gap-6 mt-8">
+            <div className="flex items-center gap-3 bg-white/10 px-6 py-3 rounded-full backdrop-blur border border-white/20">
+              <FaCalendarAlt className="text-yellow-400 w-6 h-6" />
+              <span className="text-lg font-semibold">20 de Diciembre, 2025</span>
+            </div>
+            <div className="flex items-center gap-3 bg-white/10 px-6 py-3 rounded-full backdrop-blur border border-white/20">
+              <FaMapMarkerAlt className="text-red-400 w-6 h-6" />
+              <span className="text-lg font-semibold">Mistares 3 casa 182 Diagonal al antiguo asaditos</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Sección de Premios y Ruleta */}
+        <section className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto w-full">
+          <Card className="bg-gradient-to-br from-gray-800 to-gray-900 border-yellow-500/30 shadow-2xl transform hover:scale-105 transition-all duration-300">
+            <CardHeader>
+              <FaDice className="w-16 h-16 text-green-500 mx-auto mb-4 animate-pulse" />
+              <CardTitle className="text-2xl font-bold text-yellow-400">Ruleta de la Suerte</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-300 text-lg">
+                ¡Participa en nuestro juego físico de la ruleta! Por cada compra de Granizados especiales tendrás la oportunidad de girar y ganar al instante.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-gray-800 to-gray-900 border-yellow-500/30 shadow-2xl transform hover:scale-105 transition-all duration-300">
+            <CardHeader>
+              <FaGift className="w-16 h-16 text-red-500 mx-auto mb-4 animate-bounce" />
+              <CardTitle className="text-2xl font-bold text-yellow-400">Premios en Efectivo</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-300 text-lg">
+                Gana bonos de consumo y premios en efectivo de hasta
+                <span className="block text-4xl font-bold text-green-400 mt-2">$200.000</span>
+              </p>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Call to Action */}
+        <section className="space-y-6 pt-8">
+          <h2 className="text-3xl font-bold text-white">¡No te lo pierdas!</h2>
+          <p className="text-gray-400 max-w-2xl mx-auto">
+            Regístrate ahora para recibir notificaciones exclusivas y asegurar tu participación en los sorteos especiales de la noche.
+          </p>
+          <div className="flex justify-center gap-4">
+            <Button asChild size="lg" className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold text-lg px-8 py-6 rounded-full shadow-lg shadow-yellow-500/20 transition-all hover:scale-110">
+              <Link href="/register">Registrarme Ahora</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="border-white text-white hover:bg-white/10 font-bold text-lg px-8 py-6 rounded-full transition-all">
+              <Link href="/links">Nuestras Redes</Link>
+            </Button>
+          </div>
+        </section>
+
       </main>
     </div>
   );

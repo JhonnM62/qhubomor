@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Qhubomor Casino",
+  title: "Q'hubo Mor",
   description: "Juego de premios de la tienda",
 };
 
