@@ -69,11 +69,11 @@ COPY --from=deps /app/prod_node_modules ./node_modules
 # Cambiar al usuario no-root
 USER nextjs
 
-# Exponer el puerto configurado (8016 para tu caso)
-EXPOSE 8016
+# Exponer el puerto configurado (3000 para Next.js por defecto)
+EXPOSE 3000
 
 # Variables de entorno para el puerto
-ENV PORT=8016
+ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 # Comando para iniciar la aplicación

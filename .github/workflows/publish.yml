@@ -104,7 +104,7 @@ jobs:
             echo "Starting new container: $CONTAINER_NAME"
             docker run -d \
               --name $CONTAINER_NAME \
-              -p 8050:8016 \
+              -p 8050:3000 \
               --restart always \
               --env-file ${PROJECT_DIR}/.env \
               $IMAGE_URL
