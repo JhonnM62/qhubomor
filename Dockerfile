@@ -71,6 +71,9 @@ COPY --from=deps /app/prod_node_modules ./node_modules
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 
+# Copiar la carpeta prisma (schema y base de datos)
+COPY --from=builder /app/prisma ./prisma
+
 # Cambiar al usuario no-root
 USER nextjs
 

@@ -43,7 +43,9 @@ jobs:
       - name: Generar archivo .env
         run: |
           echo '${{ secrets.ENV_FILE_CONTENT }}' > .env
-          echo "✅ .env file generated from ENV_FILE_CONTENT secret"
+          # Eliminar comillas dobles para evitar errores con docker run --env-file
+          sed -i 's/"//g' .env
+          echo "✅ .env file generated and sanitized"
 
       # Construir imagen con nombres completamente en minúsculas
       - name: Construir y subir la imagen de Docker
@@ -87,6 +89,8 @@ jobs:
             PROJECT_DIR="~/proyectos/$REPO_NAME"
             mkdir -p $PROJECT_DIR
             echo '${{ secrets.ENV_FILE_CONTENT }}' > ${PROJECT_DIR}/.env
+            # Eliminar comillas dobles en el servidor también
+            sed -i 's/"//g' ${PROJECT_DIR}/.env
 
             # Login al registry con usuario en minúsculas
             echo ${{ secrets.TOKEN_QHUBOMOR }} | docker login ghcr.io -u "$GITHUB_ACTOR_LOWER" --password-stdin
