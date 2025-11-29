@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { toast } from "sonner";
 import { Facebook, Instagram, Music, MessageCircle, Globe, Upload, Image as ImageIcon } from "@/components/ui/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import QrCodeGenerator from "@/components/ui/QrCodeGenerator";
 
 export default function SiteSettingsPage() {
   const [loading, setLoading] = useState(true);
@@ -245,6 +246,20 @@ export default function SiteSettingsPage() {
                   placeholder="https://..."
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Código QR de la Página</CardTitle>
+              <CardDescription>Este código QR dirige a la página de enlaces. Puedes descargarlo para imprimirlo.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex justify-center py-6">
+              <QrCodeGenerator 
+                value="https://qhubomor.com/links" 
+                size={200} 
+                showDownload={true} 
+              />
             </CardContent>
           </Card>
 

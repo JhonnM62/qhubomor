@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import QrCodeGenerator from "@/components/ui/QrCodeGenerator";
 
 interface SiteConfig {
   siteName: string;
@@ -126,6 +127,13 @@ export default function LinksPage() {
           )}
           
           <div className="pt-6 text-center text-sm text-muted-foreground">
+            <div className="mb-6 flex justify-center">
+              <QrCodeGenerator 
+                value="https://qhubomor.com/links" 
+                size={150} 
+                className="p-2 bg-white rounded-xl shadow-sm"
+              />
+            </div>
             <p>© {new Date().getFullYear()} {config?.siteName || "Q'hubo Mor"}. Todos los derechos reservados.</p>
           </div>
         </CardContent>

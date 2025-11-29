@@ -40,7 +40,8 @@ import {
   Play as PlayIcon,
   Ticket as TicketIcon,
   Disc as DiscIcon,
-  GripHorizontal as GripHorizontalIcon
+  GripHorizontal as GripHorizontalIcon,
+  Download as DownloadIcon
 } from 'lucide-react'
 
 export const Menu = MenuIcon
@@ -83,6 +84,7 @@ export const Play = PlayIcon
 export const Ticket = TicketIcon
 export const Disc = DiscIcon
 export const GripHorizontal = GripHorizontalIcon
+export const Download = DownloadIcon
 
 export const Google = (props: React.SVGProps<SVGSVGElement>) => (
   <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg" {...props}>
