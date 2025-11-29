@@ -66,6 +66,11 @@ RUN chown -R nextjs:nodejs /app
 # Nota: standalone ya incluye dependencias necesarias, pero a veces faltan algunas específicas
 COPY --from=deps /app/prod_node_modules ./node_modules
 
+# Copiar el cliente de Prisma generado desde el builder
+# Esto es necesario porque prod_node_modules se creó antes de 'prisma generate'
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+
 # Cambiar al usuario no-root
 USER nextjs
 
