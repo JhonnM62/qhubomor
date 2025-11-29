@@ -10,9 +10,9 @@ RUN apk add --no-cache openssl
 COPY package.json package-lock.json ./
 
 # Instalar dependencias
-RUN npm ci --only=production && \
+RUN npm ci --only=production --legacy-peer-deps && \
     cp -R node_modules prod_node_modules && \
-    npm ci
+    npm ci --legacy-peer-deps
 
 # ========== ETAPA DE COMPILACIÓN ==========
 FROM node:20-alpine AS builder
