@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Martini, Share2, Menu } from "@/components/ui/icons";
+import { Share2, Menu } from "@/components/ui/icons";
 import UserNav from "@/components/site/UserNav";
 import { useSession } from "next-auth/react";
 import {
@@ -18,9 +19,16 @@ export default function Header() {
   return (
     <header className="border-b bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="max-w-6xl mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2 font-semibold">
-          <Martini size={20} className="text-primary md:size-6" />
-          <span className="text-lg">Q'hubo Mor</span>
+        <Link href="/" className="flex items-center gap-2">
+          <div className="relative w-40 h-12">
+            <Image
+              src="/images/logohorizontal.png"
+              alt="Q'hubo Mor Logo"
+              fill
+              className="object-contain"
+              priority
+            />
+          </div>
         </Link>
 
         {/* Desktop Navigation */}
