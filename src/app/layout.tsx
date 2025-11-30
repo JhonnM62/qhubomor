@@ -32,6 +32,20 @@ export const metadata: Metadata = {
     siteName: "Q'hubo Mor",
     locale: 'es_CO',
     type: 'website',
+    images: [
+      {
+        url: '/images/logo1200x630.png',
+        width: 1200,
+        height: 630,
+        alt: "Q'hubo Mor - Granizados y Diversión",
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Q'hubo Mor - Los Mejores Granizados de Ipiales",
+    description: "Granizados, juegos y premios en Ipiales.",
+    images: ['/images/logo1200x630.png'],
   },
   robots: {
     index: true,
@@ -61,6 +75,29 @@ export default function RootLayout({
             </BingoProvider>
           </AppThemeProvider>
         </AuthProvider>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "LocalBusiness",
+              name: "Q'hubo Mor",
+              image: "https://qhubomor.com/images/favicon.ico",
+              description: "Los Mejores Granizados de Ipiales. Granizados con y sin licor, juegos y premios.",
+              address: {
+                "@type": "PostalAddress",
+                streetAddress: "Mistares 3 casa 182 Diagonal al antiguo asaditos",
+                addressLocality: "Ipiales",
+                addressRegion: "Nariño",
+                postalCode: "524060",
+                addressCountry: "CO",
+              },
+              telephone: "+573181359070",
+              url: "https://qhubomor.com",
+              priceRange: "$",
+            }),
+          }}
+        />
       </body>
     </html>
   );
