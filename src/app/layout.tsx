@@ -19,10 +19,23 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://qhubomor.com'),
   title: "Q'hubo Mor - Los Mejores Granizados de Ipiales",
   description: "Disfruta de los mejores granizados con y sin licor en Ipiales. ¡Participa en nuestros juegos, gana premios y vive una experiencia inolvidable en Q'hubo Mor!",
   icons: {
     icon: "/images/favicon.ico",
+  },
+  openGraph: {
+    title: "Q'hubo Mor - Los Mejores Granizados de Ipiales",
+    description: "Granizados, juegos y premios en Ipiales.",
+    url: 'https://qhubomor.com',
+    siteName: "Q'hubo Mor",
+    locale: 'es_CO',
+    type: 'website',
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
