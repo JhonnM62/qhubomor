@@ -92,7 +92,6 @@ export default function RootLayout({
               image: "https://qhubomor.com/images/favicon.ico",
               description: "Los Mejores Granizados con y sin licor de Ipiales. Disfruta de cocteles, micheladas y un ambiente increíble.",
               servesCuisine: "Granizados, Cocteles, Bebidas",
-              priceRange: "$",
               address: {
                 "@type": "PostalAddress",
                 streetAddress: "Mistares 3 casa 182 Diagonal al antiguo asaditos",
