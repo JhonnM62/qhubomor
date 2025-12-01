@@ -22,6 +22,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://qhubomor.com'),
   title: "Granizados con y sin Licor en Ipiales | Q'hubo Mor",
   description: "Los mejores Granizados con licor y sin licor en Ipiales. Disfruta de cocteles, micheladas y diversión en Q'hubo Mor. ¡Visítanos en Mistares!",
+  manifest: '/manifest.json',
   keywords: ["Granizados en Ipiales", "Granizados con licor Ipiales", "Granizados sin licor Ipiales", "Cocteles Ipiales", "Bar en Ipiales", "Q'hubo Mor", "Sitios para visitar en Ipiales"],
   icons: {
     icon: [
