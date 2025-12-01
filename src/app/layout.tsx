@@ -23,7 +23,13 @@ export const metadata: Metadata = {
   title: "Q'hubo Mor - Los Mejores Granizados de Ipiales",
   description: "Disfruta de los mejores granizados con y sin licor en Ipiales. ¡Participa en nuestros juegos, gana premios y vive una experiencia inolvidable en Q'hubo Mor!",
   icons: {
-    icon: "/images/favicon.ico",
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-icon.png' },
+    ],
   },
   openGraph: {
     title: "Q'hubo Mor - Los Mejores Granizados de Ipiales",
