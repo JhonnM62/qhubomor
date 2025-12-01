@@ -29,13 +29,13 @@ export default function Home() {
           </div>
           
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 drop-shadow-lg px-2">
-            GRAN 2º ANIVERSARIO
+            GRANIZADOS CON Y SIN LICOR
             <br />
-            <span className="text-white">Q'HUBO MOR</span>
+            <span className="text-white">EN IPIALES</span>
           </h1>
           
           <p className="text-lg md:text-3xl text-gray-200 font-light max-w-3xl mx-auto leading-relaxed px-4">
-            Celebra con nosotros una noche inolvidable llena de Granizados, música y premios increíbles.
+            Vive la experiencia Q'hubo Mor. Los mejores <strong>granizados con licor</strong> y <strong>sin licor</strong> de la ciudad, música y premios increíbles.
           </p>
 
           {/* Detalles del Evento */}

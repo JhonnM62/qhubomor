@@ -20,8 +20,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://qhubomor.com'),
-  title: "Q'hubo Mor - Los Mejores Granizados de Ipiales",
-  description: "Disfruta de los mejores granizados con y sin licor en Ipiales. ¡Participa en nuestros juegos, gana premios y vive una experiencia inolvidable en Q'hubo Mor!",
+  title: "Granizados con y sin Licor en Ipiales | Q'hubo Mor",
+  description: "Los mejores Granizados con licor y sin licor en Ipiales. Disfruta de cocteles, micheladas y diversión en Q'hubo Mor. ¡Visítanos en Mistares!",
+  keywords: ["Granizados en Ipiales", "Granizados con licor Ipiales", "Granizados sin licor Ipiales", "Cocteles Ipiales", "Bar en Ipiales", "Q'hubo Mor", "Sitios para visitar en Ipiales"],
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -32,8 +33,8 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "Q'hubo Mor - Los Mejores Granizados de Ipiales",
-    description: "Granizados, juegos y premios en Ipiales.",
+    title: "Granizados con y sin Licor en Ipiales | Q'hubo Mor",
+    description: "Disfruta de los mejores granizados con y sin licor en Ipiales. Cocteles, música y premios.",
     url: 'https://qhubomor.com',
     siteName: "Q'hubo Mor",
     locale: 'es_CO',
@@ -43,14 +44,14 @@ export const metadata: Metadata = {
         url: '/images/logo1200x630.png',
         width: 1200,
         height: 630,
-        alt: "Q'hubo Mor - Granizados y Diversión",
+        alt: "Granizados Q'hubo Mor Ipiales",
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: "Q'hubo Mor - Los Mejores Granizados de Ipiales",
-    description: "Granizados, juegos y premios en Ipiales.",
+    title: "Granizados con y sin Licor en Ipiales | Q'hubo Mor",
+    description: "Los mejores granizados de Nariño. Ven a disfrutar en Q'hubo Mor.",
     images: ['/images/logo1200x630.png'],
   },
   robots: {
@@ -87,9 +88,11 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "LocalBusiness",
-              name: "Q'hubo Mor",
+              name: "Q'hubo Mor - Granizados en Ipiales",
               image: "https://qhubomor.com/images/favicon.ico",
-              description: "Los Mejores Granizados de Ipiales. Granizados con y sin licor, juegos y premios.",
+              description: "Los Mejores Granizados con y sin licor de Ipiales. Disfruta de cocteles, micheladas y un ambiente increíble.",
+              servesCuisine: "Granizados, Cocteles, Bebidas",
+              priceRange: "$",
               address: {
                 "@type": "PostalAddress",
                 streetAddress: "Mistares 3 casa 182 Diagonal al antiguo asaditos",
