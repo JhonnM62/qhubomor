@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import Header from "@/components/site/Header";
+import Footer from "@/components/site/Footer";
 import UserNav from "@/components/site/UserNav";
 import AuthProvider from "@/components/providers/AuthProvider";
 import BingoProvider from "@/components/providers/BingoProvider";
@@ -80,6 +81,7 @@ export default function RootLayout({
             <BingoProvider>
               <Header />
               {children}
+              <Footer />
             </BingoProvider>
           </AppThemeProvider>
         </AuthProvider>
