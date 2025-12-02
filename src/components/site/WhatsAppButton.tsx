@@ -22,6 +22,3 @@ export default function WhatsAppButton() {
     </Link>
   );
 }
-    </Link>
-  );
-}
