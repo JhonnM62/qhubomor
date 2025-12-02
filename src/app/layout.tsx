@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import UserNav from "@/components/site/UserNav";
+import WhatsAppButton from "@/components/site/WhatsAppButton";
 import AuthProvider from "@/components/providers/AuthProvider";
 import BingoProvider from "@/components/providers/BingoProvider";
 import AppThemeProvider from "@/components/providers/ThemeProvider";
@@ -82,6 +83,7 @@ export default function RootLayout({
               <Header />
               {children}
               <Footer />
+              <WhatsAppButton />
             </BingoProvider>
           </AppThemeProvider>
         </AuthProvider>
@@ -103,7 +105,7 @@ export default function RootLayout({
                 postalCode: "524060",
                 addressCountry: "CO",
               },
-              telephone: "+573181359070",
+              telephone: "+573044430427",
               url: "https://qhubomor.com",
               priceRange: "$",
             }),

@@ -47,7 +47,7 @@ export default function Footer() {
         <div className="space-y-3 text-center md:text-left md:col-start-4">
           <h3 className="text-white font-semibold tracking-wide">Visítanos</h3>
           <p>Mistares 3 casa 182<br/>Ipiales, Nariño</p>
-          <p>+57 318 135 9070</p>
+          <p>+57 304 443 0427</p>
         </div>
       </div>
       
