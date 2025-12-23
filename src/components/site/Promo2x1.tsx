@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Clock, MapPin, Sparkles } from "lucide-react";
+import { Calendar, Clock, MapPin, Sparkles, CupSoda } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -64,13 +64,7 @@ export default function Promo2x1() {
             <Card className="bg-white/5 backdrop-blur-md border-white/10 hover:bg-white/10 transition-colors group">
               <CardContent className="p-6 flex flex-col items-center gap-4">
                 <div className="p-3 rounded-full bg-yellow-500/20 text-yellow-400 group-hover:scale-110 transition-transform">
-                  <Image 
-                    src="/images/logo1200x630.png" 
-                    alt="Cup" 
-                    width={32} 
-                    height={32} 
-                    className="w-8 h-8 object-contain"
-                  />
+                  <CupSoda className="w-8 h-8" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="font-bold text-white text-lg">Producto</h3>
