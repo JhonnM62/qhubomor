@@ -31,6 +31,10 @@ export default function Gallery({ images }: { images: GalleryImage[] }) {
     ? filteredImages.findIndex(img => img.src === selectedImage.src)
     : -1;
 
+  // Calculate next and previous images for preloading
+  const nextImage = currentIndex !== -1 ? filteredImages[(currentIndex + 1) % filteredImages.length] : null;
+  const prevImage = currentIndex !== -1 ? filteredImages[(currentIndex - 1 + filteredImages.length) % filteredImages.length] : null;
+
   const handleOpenImage = (img: GalleryImage) => {
     setSelectedImage(img);
     setZoomLevel(1);
@@ -201,18 +205,48 @@ export default function Gallery({ images }: { images: GalleryImage[] }) {
           >
             {selectedImage && (
               <div 
-                className="relative transition-transform duration-300 ease-out select-none"
+                className="relative w-full h-full transition-transform duration-300 ease-out select-none"
                 style={{ 
                   transform: `scale(${zoomLevel})`,
                   cursor: zoomLevel > 1 ? "grab" : "default"
                 }}
               >
-                {/* Use img tag here for better control over natural size in lightbox */}
-                <img
+                {/* Use Next.js Image for optimization (WebP, resizing, etc.) */}
+                <Image
                   src={selectedImage.src}
                   alt={selectedImage.alt}
-                  className="max-w-full max-h-[85vh] object-contain rounded-md shadow-2xl pointer-events-none" // pointer-events-none to prevent drag conflict with swipe
+                  fill
+                  className="object-contain pointer-events-none" // pointer-events-none to prevent drag conflict with swipe
+                  sizes="90vw"
+                  priority
+                  quality={85}
                 />
+              </div>
+            )}
+            
+            {/* Hidden Preloaders for Next/Prev Images */}
+            {selectedImage && (
+              <div className="hidden">
+                {nextImage && (
+                  <Image 
+                    src={nextImage.src} 
+                    alt="preload next" 
+                    fill 
+                    sizes="90vw" 
+                    priority={false} // Low priority but prefetch
+                    loading="eager"
+                  />
+                )}
+                {prevImage && (
+                  <Image 
+                    src={prevImage.src} 
+                    alt="preload prev" 
+                    fill 
+                    sizes="90vw" 
+                    priority={false}
+                    loading="eager"
+                  />
+                )}
               </div>
             )}
             
