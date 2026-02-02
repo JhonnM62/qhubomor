@@ -33,7 +33,7 @@ export default function Hero() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
             <Button asChild size="lg" className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-black font-bold text-lg px-8 py-6 rounded-full shadow-lg hover:scale-105 transition-all">
-              <Link href="#products">
+              <Link href="/galeria">
                 <CupSoda className="mr-2 h-6 w-6" />
                 Ver Menú
               </Link>

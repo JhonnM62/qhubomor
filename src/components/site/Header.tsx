@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Share2, Menu } from "@/components/ui/icons";
+import { Share2, Menu, Image as ImageIcon } from "@/components/ui/icons";
 import UserNav from "@/components/site/UserNav";
 import { useSession } from "next-auth/react";
 import {
@@ -33,6 +33,13 @@ export default function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-4">
+          <Button asChild variant="ghost" size="sm" className="bg-black/40 hover:bg-emerald-900/40 text-white border border-white/10 hover:border-emerald-500/50 rounded-full backdrop-blur-md shadow-lg transition-all duration-300 hover:shadow-emerald-500/20 hover:-translate-y-0.5">
+            <Link href="/galeria" className="flex items-center gap-2 px-4">
+              <ImageIcon size={14} className="text-emerald-400" />
+              <span className="font-medium tracking-wide">Galería</span>
+            </Link>
+          </Button>
+
           <Button asChild variant="ghost" size="sm" className="bg-black/40 hover:bg-emerald-900/40 text-white border border-white/10 hover:border-emerald-500/50 rounded-full backdrop-blur-md shadow-lg transition-all duration-300 hover:shadow-emerald-500/20 hover:-translate-y-0.5">
             <Link href="/links" className="flex items-center gap-2 px-4">
               <Share2 size={14} className="text-emerald-400" />
@@ -68,6 +75,12 @@ export default function Header() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 bg-background/95 backdrop-blur-md">
+              <DropdownMenuItem asChild>
+                <Link href="/galeria" className="flex items-center gap-2 w-full cursor-pointer">
+                  <ImageIcon className="h-4 w-4" />
+                  <span>Galería</span>
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/links" className="flex items-center gap-2 w-full cursor-pointer">
                   <Share2 className="h-4 w-4" />
