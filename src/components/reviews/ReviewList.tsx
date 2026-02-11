@@ -39,7 +39,7 @@ interface Review {
   content: string
   rating: number
   createdAt: string
-  User: ReviewUser
+  user: ReviewUser
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
@@ -99,11 +99,11 @@ export function ReviewList() {
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex items-center gap-3">
                       <Avatar>
-                        <AvatarImage src={review.User.image || ""} />
+                        <AvatarImage src={review.user.image || ""} />
                         <AvatarFallback><UserIcon className="h-4 w-4" /></AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-semibold text-sm">{review.User.name || "Usuario Anónimo"}</p>
+                        <p className="font-semibold text-sm">{review.user.name || "Usuario Anónimo"}</p>
                         <p className="text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true, locale: es })}
                         </p>

@@ -20,7 +20,7 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -39,7 +39,7 @@ model BingoBoard {
   marks     String   @default("[]")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model BingoConfig {
@@ -62,7 +62,7 @@ model BingoParticipant {
   id       String   @id @default(cuid())
   userId   String
   joinedAt DateTime @default(now())
-  User     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model BingoUserProgress {
@@ -79,7 +79,7 @@ model BingoWinner {
   prize     String?
   claimed   Boolean  @default(false)
   createdAt DateTime @default(now())
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model GameAttempt {
@@ -91,7 +91,7 @@ model GameAttempt {
   limit     Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, game, date])
 }
@@ -161,7 +161,7 @@ model SocialProof {
   screenshotPath String
   verified       Boolean  @default(false)
   createdAt      DateTime @default(now())
-  User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, platform])
 }
@@ -180,16 +180,16 @@ model User {
   createdAt          DateTime             @default(now())
   roleId             String?
   blocked            Boolean              @default(false)
-  Account            Account[]
+  accounts           Account[]
   BingoBoard         BingoBoard?
   BingoParticipant   BingoParticipant[]
   BingoWinner        BingoWinner[]
   GameAttempt        GameAttempt[]
   GameProgress       GameProgress?
   PromoCode          PromoCode[]
-  Session            Session[]
+  sessions           Session[]
   SocialProof        SocialProof[]
-  Role               Role?                @relation(fields: [roleId], references: [id])
+  role               Role?                @relation(fields: [roleId], references: [id])
   reviews            Review[]
 }
 
@@ -210,7 +210,7 @@ model Review {
   status    String   @default("activo") @map("estado")
   createdAt DateTime @default(now()) @map("fecha_creacion")
 
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("opiniones_clientes")
 }

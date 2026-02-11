@@ -69,7 +69,7 @@ export const authOptions: NextAuthOptions = {
         try {
           const u = await prisma.user.findUnique({ where: { id: String(token.userId) }, include: { role: true } });
           (token as any).role = u?.role?.name ?? "USER";
-        } catch {}
+        } catch (e) { console.error("Error fetching user role", e); }
       }
       return token;
     },

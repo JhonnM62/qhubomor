@@ -76,7 +76,7 @@ export async function GET(req: Request) {
         ...(userId ? { userId } : {}),
       },
       include: {
-        User: {
+        user: {
           select: { name: true, image: true },
         },
       },

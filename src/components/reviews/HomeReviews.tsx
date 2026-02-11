@@ -22,7 +22,7 @@ interface Review {
   content: string
   rating: number
   createdAt: string
-  User: ReviewUser
+  user: ReviewUser
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
@@ -77,11 +77,11 @@ export default function HomeReviews() {
                   <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
                       <Avatar className="h-10 w-10 border-2 border-primary/10">
-                        <AvatarImage src={review.User.image || ""} alt={review.User.name || "Usuario"} />
+                        <AvatarImage src={review.user.image || ""} alt={review.user.name || "Usuario"} />
                         <AvatarFallback><User className="h-5 w-5 text-muted-foreground" /></AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-semibold text-sm leading-none mb-1">{review.User.name || "Usuario Anónimo"}</p>
+                        <p className="font-semibold text-sm leading-none mb-1">{review.user.name || "Usuario Anónimo"}</p>
                         <time dateTime={review.createdAt} className="text-xs text-muted-foreground">
                           {formatDistanceToNow(new Date(review.createdAt), { addSuffix: true, locale: es })}
                         </time>
