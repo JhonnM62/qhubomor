@@ -68,6 +68,7 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
+    const limit = searchParams.get("limit");
 
     const reviews = await prisma.review.findMany({
       where: {
@@ -82,6 +83,7 @@ export async function GET(req: Request) {
       orderBy: {
         createdAt: "desc",
       },
+      ...(limit ? { take: parseInt(limit) } : {}),
     });
 
     return NextResponse.json(reviews);

@@ -1,6 +1,7 @@
 import Hero from "@/components/site/Hero";
 import ProductShowcase from "@/components/site/ProductShowcase";
 import LocationSection from "@/components/site/LocationSection";
+import HomeReviews from "@/components/reviews/HomeReviews";
 
 export default function Home() {
   return (
@@ -8,6 +9,7 @@ export default function Home() {
       <main className="flex-1 flex flex-col">
         <Hero />
         <ProductShowcase />
+        <HomeReviews />
         <LocationSection />
       </main>
     </div>
