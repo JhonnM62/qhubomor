@@ -1,15 +1,33 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSession } from "next-auth/react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { MessageSquarePlus } from "lucide-react"
 import { ReviewList } from "@/components/reviews/ReviewList"
 import { ReviewForm } from "@/components/reviews/ReviewForm"
 import { Button } from "@/components/ui/button"
 
-export default function ReviewsPage() {
-  const { data: session } = useSession()
+function ReviewsContent() {
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [showForm, setShowForm] = useState(false)
+  const [isHandlingAuth, setIsHandlingAuth] = useState(false)
+
+  useEffect(() => {
+    const action = searchParams.get("action")
+    if (action === "write") {
+      if (status === "authenticated") {
+        setShowForm(true)
+        // Clean URL without reloading
+        window.history.replaceState(null, "", "/reviews")
+      } else if (status === "unauthenticated" && !isHandlingAuth) {
+        setIsHandlingAuth(true)
+        router.push("/login?callbackUrl=/reviews?action=write")
+      }
+    }
+  }, [status, searchParams, router, isHandlingAuth])
 
   return (
     <div className="container max-w-4xl mx-auto py-8 px-4">
@@ -27,6 +45,13 @@ export default function ReviewsPage() {
             Escribir Opinión
           </Button>
         )}
+
+        {!session?.user && (
+          <Button onClick={() => router.push("/login?callbackUrl=/reviews?action=write")} className="shrink-0">
+            <MessageSquarePlus className="mr-2 h-4 w-4" />
+            Iniciar sesión para opinar
+          </Button>
+        )}
       </div>
 
       {showForm && (
@@ -40,5 +65,13 @@ export default function ReviewsPage() {
 
       <ReviewList />
     </div>
+  )
+}
+
+export default function ReviewsPage() {
+  return (
+    <Suspense fallback={<div className="container max-w-4xl mx-auto py-8 px-4 text-center">Cargando...</div>}>
+      <ReviewsContent />
+    </Suspense>
   )
 }

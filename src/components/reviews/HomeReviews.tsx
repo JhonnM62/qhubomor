@@ -114,7 +114,7 @@ export default function HomeReviews() {
             size="lg" 
             className="rounded-full px-8 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all hover:scale-105"
           >
-            <Link href="/reviews">
+            <Link href="/reviews?action=write">
               <MessageSquarePlus className="mr-2 h-5 w-5" />
               Escribir una reseña
             </Link>

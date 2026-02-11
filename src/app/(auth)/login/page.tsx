@@ -9,7 +9,12 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { Google } from "@/components/ui/icons";
 
-export default function LoginPage() {
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+
+function LoginForm() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/games";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,7 +27,7 @@ export default function LoginPage() {
       return;
     }
     if (res?.ok) {
-      window.location.href = "/games";
+      window.location.href = callbackUrl;
     }
   };
   return (
@@ -47,7 +52,7 @@ export default function LoginPage() {
             </Button>
           </div>
           <div className="mt-4">
-            <Button variant="outline" className="w-full gap-2" onClick={() => signIn("google", { callbackUrl: "/games" })}>
+            <Button variant="outline" className="w-full gap-2" onClick={() => signIn("google", { callbackUrl })}>
               <Google className="w-5 h-5" />
               Entrar con Google
             </Button>
@@ -55,5 +60,13 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex justify-center p-8">Cargando...</div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
