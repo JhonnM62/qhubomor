@@ -20,7 +20,10 @@ const schema = z.object({
 });
 
 export default function RegisterPage() {
-  const { register, handleSubmit, formState: { errors } } = useForm<z.infer<typeof schema>>({ resolver: zodResolver(schema) });
+  const { register, handleSubmit, formState: { errors } } = useForm<z.infer<typeof schema>>({ 
+    resolver: zodResolver(schema),
+    mode: "onChange"
+  });
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const onSubmit = async (values: z.infer<typeof schema>) => {
@@ -47,18 +50,22 @@ export default function RegisterPage() {
             <div className="space-y-2">
               <Label className="mb-2 tracking-wide">Nombre completo</Label>
               <Input {...register("name")} />
+              {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
             </div>
             <div className="space-y-2">
               <Label className="mb-2 tracking-wide">Email</Label>
               <Input type="email" {...register("email")} />
+              {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">
               <Label className="mb-2 tracking-wide">Contraseña</Label>
               <Input type="password" {...register("password")} />
+              {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
             </div>
             <div className="space-y-2">
               <Label className="mb-2 tracking-wide">Fecha de nacimiento</Label>
               <Input type="date" {...register("dob")} />
+              {errors.dob && <p className="text-sm text-red-500">{errors.dob.message}</p>}
             </div>
             <Button disabled={loading} type="submit" className="w-full">Crear cuenta</Button>
           </form>
