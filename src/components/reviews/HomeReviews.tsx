@@ -93,11 +93,13 @@ export default function HomeReviews() {
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="flex-1">
-                  <h3 className="font-semibold text-lg mb-2 line-clamp-1 group-hover:text-primary transition-colors">{review.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed line-clamp-4">
-                    {review.content}
-                  </p>
+                <CardContent className="flex-1 min-h-0">
+                  <h3 className="font-semibold text-lg mb-2 group-hover:text-primary transition-colors break-words">{review.title}</h3>
+                  <div className="max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
+                    <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap break-words">
+                      {review.content}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             ))
