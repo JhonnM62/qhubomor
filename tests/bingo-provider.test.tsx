@@ -9,8 +9,8 @@ function Probe() {
 
 describe("BingoProvider", () => {
   it("provides default context without crashing", () => {
-    const { getByRole } = render(<BingoProvider><Probe /></BingoProvider>);
-    const el = getByRole("generic");
+    const { container } = render(<BingoProvider><Probe /></BingoProvider>);
+    const el = container.querySelector("[data-ready]");
     expect(el).toBeTruthy();
   });
 });

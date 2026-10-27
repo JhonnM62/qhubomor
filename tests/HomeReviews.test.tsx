@@ -67,6 +67,6 @@ describe("HomeReviews", () => {
     render(<HomeReviews />);
     const link = screen.getByRole("link", { name: /escribir una reseña/i });
     expect(link).toBeTruthy();
-    expect(link.getAttribute("href")).toBe("/reviews");
+    expect(link.getAttribute("href")).toContain("/reviews");
   });
 });

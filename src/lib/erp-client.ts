@@ -60,3 +60,97 @@ export async function consultarFidelidadCliente(
     return null;
   }
 }
+
+export interface ReclamarMisionPayload {
+  cedula: string;
+  nombre?: string;
+  whatsapp?: string;
+  tipoMision: 'GOOGLE_REVIEW' | 'REDES_SOCIALES';
+}
+
+export async function reclamarMisionCliente(
+  payload: ReclamarMisionPayload
+): Promise<{ success: boolean; cliente?: any; mensaje?: string; error?: string }> {
+  try {
+    const res = await fetch(`${ERP_BASE_URL}/clientes/fidelidad/reclamar-mision`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const json = await res.json();
+    if (!res.ok) {
+      return {
+        success: false,
+        error: json?.message || json?.error || 'Error al acreditar el sello de la misión',
+      };
+    }
+
+    const data = json?.data ?? json;
+    return {
+      success: true,
+      cliente: data?.cliente ?? data,
+      mensaje: data?.mensaje || 'Sello acreditado con éxito',
+    };
+  } catch (err: any) {
+    console.error('Error al reclamar misión en ERP:', err);
+    return {
+      success: false,
+      error: err.message || 'Error de conexión con el servidor POS',
+    };
+  }
+}
+
+export interface SincronizarUsuarioPayload {
+  email: string;
+  nombre?: string;
+}
+
+export interface SincronizarUsuarioResponse {
+  success: boolean;
+  cliente?: {
+    IDcliente: number;
+    nombre: string;
+    email?: string;
+    contador: number;
+    comprasTotales: number;
+    isNew?: boolean;
+  };
+  error?: string;
+}
+
+export async function sincronizarUsuarioCliente(
+  payload: SincronizarUsuarioPayload
+): Promise<SincronizarUsuarioResponse> {
+  try {
+    const res = await fetch(`${ERP_BASE_URL}/clientes/fidelidad/sincronizar-usuario`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const json = await res.json();
+    if (!res.ok) {
+      return {
+        success: false,
+        error: json?.message || json?.error || 'Error al sincronizar cliente en ERP',
+      };
+    }
+
+    const data = json?.data ?? json;
+    return {
+      success: true,
+      cliente: data,
+    };
+  } catch (err: any) {
+    console.error('Error al sincronizar usuario con ERP:', err);
+    return {
+      success: false,
+      error: err.message || 'Error de conexión con ERP',
+    };
+  }
+}

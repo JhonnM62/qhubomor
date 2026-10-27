@@ -99,7 +99,7 @@ export function StampGrid({ contador }: StampGridProps) {
         </div>
         <div className="flex items-center gap-1.5">
           <Award className="w-3.5 h-3.5 text-amber-400" />
-          <span className="font-semibold text-amber-300">Sello 10: Granizado Gratis</span>
+          <span className="font-bold text-amber-300">Sello 10: Granizado 12oz Totalmente GRATIS</span>
         </div>
       </div>
     </div>

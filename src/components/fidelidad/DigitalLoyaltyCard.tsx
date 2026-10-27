@@ -127,10 +127,10 @@ export function DigitalLoyaltyCard({
               <Award className="w-6 h-6 shrink-0" />
               <div className="flex-1">
                 <span className="text-xs font-black uppercase tracking-wider block">
-                  Granizado Gratis Disponible
+                  Granizado de 12oz Totalmente GRATIS
                 </span>
                 <span className="text-[11px] font-medium leading-tight block">
-                  ¡Ciclo completado! Muestra esta pantalla en caja para reclamar tu premio.
+                  ¡Ciclo de 10 sellos completado! Presenta esta pantalla en caja para reclamar tu Granizado de 12 onzas Totalmente GRATIS.
                 </span>
               </div>
             </div>
@@ -142,7 +142,7 @@ export function DigitalLoyaltyCard({
                   Hito 5 Alcanzado: 15% Descuento
                 </span>
                 <span className="text-[11px] text-zinc-400 leading-tight block">
-                  Faltan {cliente.sellosRestantesParaGranizado} compras para tu Granizado Gratis.
+                  Faltan {cliente.sellosRestantesParaGranizado} compras para tu Granizado de 12oz Totalmente GRATIS.
                 </span>
               </div>
             </div>
@@ -150,7 +150,7 @@ export function DigitalLoyaltyCard({
             <div className="p-3 rounded-2xl bg-zinc-950/60 border border-zinc-800 text-zinc-400 flex items-center gap-3">
               <Zap className="w-5 h-5 shrink-0 text-amber-400" />
               <span className="text-xs">
-                Faltan <strong className="text-zinc-200">{cliente.sellosRestantesParaGranizado} compras</strong> para tu Granizado Gratis.
+                Faltan <strong className="text-zinc-200">{cliente.sellosRestantesParaGranizado} compras</strong> para tu Granizado de 12oz Totalmente GRATIS.
               </span>
             </div>
           )}

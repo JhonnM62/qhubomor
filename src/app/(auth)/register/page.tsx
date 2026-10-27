@@ -46,35 +46,50 @@ export default function RegisterPage() {
           <CardTitle>Registro</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="mb-6">
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full gap-3 py-6 bg-white dark:bg-zinc-900 border-2 border-zinc-200 dark:border-zinc-700 hover:border-[#4285F4] hover:shadow-lg transition-all rounded-xl font-bold text-base"
+              onClick={() => signIn("google", { callbackUrl: "/fidelidad?bienvenida=true" })}
+            >
+              <Google className="w-5 h-5" />
+              <span>Registrarse con Google</span>
+            </Button>
+          </div>
+
+          <div className="relative my-4 text-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground font-semibold">O formulario manual</span>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="space-y-2">
-              <Label className="mb-2 tracking-wide">Nombre completo</Label>
+              <Label className="mb-2 tracking-wide font-medium">Nombre completo</Label>
               <Input {...register("name")} />
               {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label className="mb-2 tracking-wide">Email</Label>
+              <Label className="mb-2 tracking-wide font-medium">Email</Label>
               <Input type="email" {...register("email")} />
               {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label className="mb-2 tracking-wide">Contraseña</Label>
+              <Label className="mb-2 tracking-wide font-medium">Contraseña</Label>
               <Input type="password" {...register("password")} />
               {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label className="mb-2 tracking-wide">Fecha de nacimiento</Label>
+              <Label className="mb-2 tracking-wide font-medium">Fecha de nacimiento</Label>
               <Input type="date" {...register("dob")} />
               {errors.dob && <p className="text-sm text-red-500">{errors.dob.message}</p>}
             </div>
-            <Button disabled={loading} type="submit" className="w-full">Crear cuenta</Button>
+            <Button disabled={loading} type="submit" className="w-full py-5 font-bold">Crear cuenta</Button>
           </form>
-          <div className="mt-4">
-            <Button variant="outline" className="w-full gap-2" onClick={() => signIn("google")}>
-              <Google className="w-5 h-5" />
-              Registro con Google
-            </Button>
-          </div>
         </CardContent>
       </Card>
     </div>

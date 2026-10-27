@@ -5,6 +5,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "./prisma";
 import { env } from "./env";
 import { compare } from "bcrypt";
+import { sincronizarUsuarioCliente } from "./erp-client";
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -71,12 +72,41 @@ export const authOptions: NextAuthOptions = {
           (token as any).role = u?.role?.name ?? "USER";
         } catch (e) { console.error("Error fetching user role", e); }
       }
+      // Sincronizar automáticamente con el ERP y obtener código único de cliente (máx 6 dígitos)
+      if (token.email && !(token as any).codigoCliente) {
+        try {
+          const syncRes = await sincronizarUsuarioCliente({
+            email: token.email,
+            nombre: token.name || undefined,
+          });
+          if (syncRes.success && syncRes.cliente?.IDcliente) {
+            (token as any).codigoCliente = syncRes.cliente.IDcliente;
+          }
+        } catch (e) {
+          console.error("Error al sincronizar cliente en ERP desde NextAuth:", e);
+        }
+      }
       return token;
     },
     async session({ session, token }) {
       (session as any).userId = token.userId;
-       (session as any).role = (token as any).role;
+      (session as any).role = (token as any).role;
+      (session as any).codigoCliente = (token as any).codigoCliente;
       return session;
+    },
+    async redirect({ url, baseUrl }) {
+      // Si la URL es relativa
+      if (url.startsWith("/")) {
+        // Si va a /games por defecto antiguo, dirigirlo a fidelidad
+        if (url === "/games") return `${baseUrl}/fidelidad?bienvenida=true`;
+        return `${baseUrl}${url}`;
+      }
+      // Si es el mismo origen
+      else if (new URL(url).origin === baseUrl) {
+        if (new URL(url).pathname === "/games") return `${baseUrl}/fidelidad?bienvenida=true`;
+        return url;
+      }
+      return `${baseUrl}/fidelidad?bienvenida=true`;
     },
   },
   secret: env.NEXTAUTH_SECRET,

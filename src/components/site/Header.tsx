@@ -20,8 +20,8 @@ export default function Header() {
   return (
     <header className="border-b bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="max-w-6xl mx-auto flex h-16 items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2 -ml-4">
-          <div className="relative w-40 h-12">
+        <Link href="/" className="flex items-center gap-2 -ml-2 sm:-ml-4 shrink-0">
+          <div className="relative w-32 sm:w-40 h-10 sm:h-12">
             <Image
               src="/images/logohorizontal.png"
               alt="Q'hubo Mor Logo"
@@ -80,11 +80,37 @@ export default function Header() {
         </nav>
 
         {/* Mobile Navigation */}
-        <div className="flex md:hidden items-center gap-2">
+        <div className="flex md:hidden items-center gap-1.5 sm:gap-2">
+          {/* Botón Fidelidad Directo en Barra Móvil */}
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 sm:px-2.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/30 hover:border-amber-500/60 rounded-full shadow-sm text-xs font-bold transition-all shrink-0"
+          >
+            <Link href="/fidelidad" className="flex items-center gap-1.5">
+              <Award className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="hidden min-[360px]:inline">Fidelidad</span>
+            </Link>
+          </Button>
+
+          {/* Botón Misiones Directo en Barra Móvil */}
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 sm:px-2.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 hover:border-amber-500/60 rounded-full shadow-sm text-xs font-bold transition-all shrink-0"
+          >
+            <Link href="/misiones" className="flex items-center gap-1.5">
+              <Star className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="hidden min-[390px]:inline">Misiones</span>
+            </Link>
+          </Button>
+
           <UserNav />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-9 w-9">
+              <Button variant="ghost" size="icon" className="h-9 w-9 text-zinc-300 hover:text-white">
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
