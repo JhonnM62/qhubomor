@@ -3,11 +3,12 @@
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
 import { DigitalLoyaltyCard } from '@/components/fidelidad/DigitalLoyaltyCard';
 import { PurchaseHistory } from '@/components/fidelidad/PurchaseHistory';
 import { useFidelidadSocket } from '@/hooks/useFidelidadSocket';
 import { FidelidadClienteResponse } from '@/lib/erp-client';
+import { Google } from '@/components/ui/icons';
 import {
   Search,
   Award,
@@ -25,12 +26,19 @@ import {
   X,
   ShieldCheck,
   LayoutDashboard,
+  LogIn,
+  UserPlus,
+  QrCode,
+  Flame,
+  ChevronDown,
+  Lock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 function FidelidadContent() {
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
+  const isLoggedIn = status === 'authenticated' && !!session?.user;
   const esAdmin = (session as any)?.role === 'ADMIN';
 
   const [identificadorInput, setIdentificadorInput] = useState('');
@@ -43,7 +51,10 @@ function FidelidadContent() {
   const [codigoGenerado, setCodigoGenerado] = useState<number | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
 
-  // 1. Sincronizar automáticamente el usuario con el ERP al estar logeado
+  // Estado para alternar el buscador manual si no está logeado
+  const [showManualSearch, setShowManualSearch] = useState(false);
+
+  // 1. Sincronizar automáticamente el usuario con el ERP al tener sesión iniciada
   useEffect(() => {
     async function syncClienteConErp() {
       if (status === 'authenticated' && session?.user?.email) {
@@ -58,7 +69,7 @@ function FidelidadContent() {
           return;
         }
 
-        // Si no vino en la sesión aún, sincronizarlo vía API
+        // Si no vino en la sesión aún, sincronizarlo vía API para obtener/generar código de 6 dígitos
         try {
           const res = await fetch('/api/fidelidad/sincronizar-usuario', {
             method: 'POST',
@@ -94,16 +105,16 @@ function FidelidadContent() {
     }
   }, [searchParams]);
 
-  // 3. Cargar identificador guardado previamente si no hay usuario activo
+  // 3. Si no hay sesión, revisar si hay identificador guardado previamente
   useEffect(() => {
-    if (typeof window !== 'undefined' && !activeIdentificador) {
+    if (typeof window !== 'undefined' && !activeIdentificador && status === 'unauthenticated') {
       const saved = localStorage.getItem('qhubomor_fidelidad_id');
       if (saved) {
         setIdentificadorInput(saved);
         setActiveIdentificador(saved);
       }
     }
-  }, [activeIdentificador]);
+  }, [activeIdentificador, status]);
 
   const fetchCliente = useCallback(async (id: string, isSilent = false) => {
     if (!id.trim()) return;
@@ -123,7 +134,7 @@ function FidelidadContent() {
       const data: FidelidadClienteResponse = await res.json();
       setCliente(data);
       if (!isSilent) {
-        toast.success(`Tarjeta de fidelidad cargada: ${data.nombre}`);
+        toast.success(`Tarjeta cargada: ${data.nombre}`);
       }
 
       if (typeof window !== 'undefined') {
@@ -214,218 +225,349 @@ function FidelidadContent() {
         </div>
       )}
 
-      {/* Header de la sección */}
-      <section className="relative px-4 pt-10 sm:pt-16 pb-8 text-center max-w-4xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-4 shadow-sm shadow-amber-500/10">
-          <Award className="w-4 h-4 text-amber-400" />
-          <span>Club de Fidelidad Oficial Q&apos;hubo Mor</span>
-        </div>
-
-        <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white leading-tight">
-          Tu Lealtad Tiene <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-500">Premio</span>
-        </h1>
-        <p className="text-sm sm:text-base text-zinc-400 mt-3 max-w-2xl mx-auto leading-relaxed">
-          Cada visita y compra en el restaurante suma un sello a tu tarjeta digital. Al acumular 10 sellos recibes tu <strong className="text-amber-400 font-bold">Granizado de 12 onzas Totalmente GRATIS</strong>.
-        </p>
-
-        {/* Tarjeta de Código Oficial para usuario logeado */}
-        {codigoGenerado && (
-          <div className="mt-6 max-w-md mx-auto p-4 rounded-2xl bg-zinc-900/90 border border-amber-500/40 shadow-lg shadow-amber-500/10 flex items-center justify-between gap-3 text-left">
-            <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 block">
-                Tu Código Oficial de Cliente
-              </span>
-              <span className="text-xl sm:text-2xl font-black font-mono text-amber-400">
-                #{codigoGenerado}
-              </span>
-            </div>
-            <button
-              onClick={handleCopyCode}
-              className="px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-zinc-200 border border-zinc-700 flex items-center gap-1.5 transition-colors"
-            >
-              {copiedCode ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-              <span>{copiedCode ? 'Copiado' : 'Copiar'}</span>
-            </button>
-          </div>
-        )}
-
-        {/* Formulario de Consulta / Búsqueda */}
-        <form onSubmit={handleSubmit} className="mt-6 flex flex-col sm:flex-row gap-2.5 max-w-xl mx-auto">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-            <input
-              type="text"
-              value={identificadorInput}
-              onChange={(e) => setIdentificadorInput(e.target.value)}
-              placeholder="Ingresa Cédula o Código (ej: 50934)"
-              className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-zinc-900 border border-zinc-800 text-sm sm:text-base text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 transition-colors shadow-inner"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-extrabold text-sm sm:text-base transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95"
-          >
-            {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Consultar Tarjeta'}
-          </button>
-        </form>
-      </section>
-
-      {/* Contenido principal */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {cliente ? (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Columna Izquierda: Tarjeta Digital VIP y Acceso a Misiones */}
-            <div className="lg:col-span-5 space-y-6">
-              <DigitalLoyaltyCard
-                cliente={cliente}
-                isRealtimeConnected={isConnected}
-              />
-
-              {/* Acceso directo a Misiones y Google Reviews */}
-              <Link
-                href="/misiones"
-                className="block p-5 rounded-3xl bg-gradient-to-r from-zinc-900 via-zinc-900 to-amber-950/40 border border-amber-500/20 hover:border-amber-500/40 transition-all duration-200 group shadow-xl shadow-amber-500/5 hover:-translate-y-0.5"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3.5">
-                    <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
-                      <MapPin className="w-5 h-5 text-red-500" />
-                    </div>
-                    <div>
-                      <h4 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                        <span>Misión Google Maps</span>
-                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                      </h4>
-                      <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">
-                        Califícanos con 5 estrellas en Google Maps y gana +1 Sello Extra directo en tu tarjeta.
-                      </p>
-                    </div>
-                  </div>
-                  <ArrowRight className="w-5 h-5 text-zinc-500 group-hover:text-amber-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
+      {/* ========================================================================= */}
+      {/* CASO 1: USUARIO CON SESIÓN INICIADA -> MOSTRAR PUNTOS Y TARJETA DIRECTAMENTE */}
+      {/* ========================================================================= */}
+      {isLoggedIn ? (
+        <>
+          {/* Header de bienvenida con puntos del cliente */}
+          <section className="relative px-4 pt-8 sm:pt-12 pb-6 max-w-6xl mx-auto">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-zinc-900 via-zinc-950 to-amber-950/30 border border-amber-500/30 shadow-2xl shadow-amber-500/10">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                  <Award className="w-4 h-4 text-amber-400" />
+                  <span>Miembro Oficial del Club Privilege</span>
                 </div>
-              </Link>
+                <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+                  ¡Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-orange-400">{session.user?.name || 'Cliente VIP'}</span>!
+                </h1>
+                <p className="text-xs sm:text-sm text-zinc-400 max-w-xl leading-relaxed">
+                  Aquí tienes tu balance de puntos y sellos en vivo. Dicta tu código en caja al momento de comprar para acumular sellos y canjear tus premios.
+                </p>
+              </div>
 
-              {/* Beneficios Privilege Resumen */}
-              <div className="p-5 sm:p-6 rounded-3xl bg-zinc-950/70 border border-zinc-800/80 space-y-3.5">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
-                  <Award className="w-4 h-4" />
-                  <span>Beneficios del Club Q&apos;hubo Mor</span>
-                </h4>
-                <ul className="text-xs text-zinc-400 space-y-2.5">
-                  <li className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                    <span><strong className="text-zinc-200">Sello 5:</strong> Desbloqueas un 15% de descuento en tu consumo.</span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    <span><strong className="text-zinc-200">Sello 10:</strong> Granizado de 12 onzas Totalmente GRATIS.</span>
-                  </li>
-                  <li className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-                    <span><strong className="text-zinc-200">Sincronización en vivo:</strong> Cada orden facturada en caja actualiza tus sellos al instante vía POS.</span>
-                  </li>
-                </ul>
+              {/* Bloque resumen de puntos y código */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 shrink-0">
+                {/* Caja de Sellos Acumulados */}
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-zinc-900/90 border border-amber-500/40 text-center">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 block">
+                    Sellos Acumulados
+                  </span>
+                  <div className="flex items-center justify-center gap-1.5 mt-1">
+                    <span className="text-2xl sm:text-3xl font-black text-amber-400 font-mono">
+                      {cliente?.contador || 0}
+                    </span>
+                    <span className="text-xs font-bold text-zinc-400">/ 10</span>
+                  </div>
+                  <span className="text-[10px] text-amber-400/90 font-semibold block mt-0.5">
+                    {cliente?.granizadoGratis
+                      ? '¡Granizado Disponible!'
+                      : `${Math.max(0, 10 - (cliente?.contador || 0))} para Granizado`}
+                  </span>
+                </div>
+
+                {/* Caja de Código Oficial */}
+                <div className="p-3.5 sm:p-4 rounded-2xl bg-zinc-900/90 border border-zinc-800 text-center">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 block">
+                    Tu Código POS
+                  </span>
+                  <span className="text-xl sm:text-2xl font-black text-white font-mono block mt-1">
+                    #{codigoGenerado || cliente?.IDcliente || '---'}
+                  </span>
+                  <button
+                    onClick={handleCopyCode}
+                    className="mt-1 text-[10px] text-amber-400 hover:text-amber-300 font-bold flex items-center justify-center gap-1 mx-auto"
+                  >
+                    {copiedCode ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedCode ? '¡Copiado!' : 'Copiar código'}</span>
+                  </button>
+                </div>
+
+                {/* Caja de Compras Totales */}
+                <div className="col-span-2 sm:col-span-1 p-3.5 sm:p-4 rounded-2xl bg-zinc-900/90 border border-zinc-800 text-center flex flex-col justify-center">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 block">
+                    Compras en POS
+                  </span>
+                  <span className="text-xl sm:text-2xl font-black text-zinc-200 font-mono block mt-1">
+                    {cliente?.comprasTotales || cliente?.contador || 0}
+                  </span>
+                  <span className="text-[10px] text-zinc-500 font-medium block mt-0.5">
+                    Registradas en caja
+                  </span>
+                </div>
               </div>
             </div>
+          </section>
 
-            {/* Columna Derecha: Historial de Compras Sincronizado */}
-            <div className="lg:col-span-7 space-y-6">
-              <PurchaseHistory
-                ventas={cliente.ultimasVentas}
-                comprasTotales={cliente.comprasTotales}
-                contador={cliente.contador}
-              />
+          {/* Contenido principal: Tarjeta Digital e Historial */}
+          <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-2">
+            {loading && !cliente ? (
+              <div className="py-20 text-center space-y-4">
+                <RefreshCw className="w-10 h-10 text-amber-400 animate-spin mx-auto" />
+                <p className="text-sm text-zinc-400 font-medium">
+                  Cargando tus puntos y tarjeta de fidelidad en tiempo real...
+                </p>
+              </div>
+            ) : cliente ? (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* Columna Izquierda: Tarjeta Digital VIP y Acceso a Misiones */}
+                <div className="lg:col-span-5 space-y-6">
+                  <DigitalLoyaltyCard
+                    cliente={cliente}
+                    isRealtimeConnected={isConnected}
+                  />
+
+                  {/* Acceso directo a Misiones para sumar sellos extra */}
+                  <Link
+                    href="/misiones"
+                    className="block p-5 rounded-3xl bg-gradient-to-r from-zinc-900 via-zinc-900 to-amber-950/40 border border-amber-500/20 hover:border-amber-500/40 transition-all duration-200 group shadow-xl shadow-amber-500/5 hover:-translate-y-0.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3.5">
+                        <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
+                          <MapPin className="w-5 h-5 text-red-500" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs sm:text-sm font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <span>Misiones Disponibles</span>
+                            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                          </h4>
+                          <p className="text-xs text-zinc-400 mt-0.5 leading-relaxed">
+                            Reseña en Google Maps y redes sociales = <strong className="text-amber-400">+2 Sellos Extra</strong>.
+                          </p>
+                        </div>
+                      </div>
+                      <ArrowRight className="w-5 h-5 text-zinc-500 group-hover:text-amber-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
+                    </div>
+                  </Link>
+
+                  {/* Beneficios Privilege Resumen */}
+                  <div className="p-5 sm:p-6 rounded-3xl bg-zinc-950/70 border border-zinc-800/80 space-y-3.5">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
+                      <Award className="w-4 h-4" />
+                      <span>Beneficios de tu Membresía</span>
+                    </h4>
+                    <ul className="text-xs text-zinc-400 space-y-2.5">
+                      <li className="flex items-start gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                        <span><strong className="text-zinc-200">Sello 5:</strong> 15% de descuento en tu consumo.</span>
+                      </li>
+                      <li className="flex items-start gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                        <span><strong className="text-zinc-200">Sello 10:</strong> Granizado de 12 onzas Totalmente GRATIS.</span>
+                      </li>
+                      <li className="flex items-start gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                        <span><strong className="text-zinc-200">Sincronización en vivo:</strong> El cajero ve tus sellos al buscar tu código.</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* Columna Derecha: Historial de Compras Sincronizado */}
+                <div className="lg:col-span-7 space-y-6">
+                  <PurchaseHistory
+                    ventas={cliente.ultimasVentas}
+                    comprasTotales={cliente.comprasTotales}
+                    contador={cliente.contador}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="p-8 rounded-3xl bg-zinc-950 border border-zinc-800 text-center space-y-4 max-w-md mx-auto">
+                <Sparkles className="w-10 h-10 text-amber-400 mx-auto animate-pulse" />
+                <h3 className="text-lg font-bold text-white">Generando tu Tarjeta de Fidelidad</h3>
+                <p className="text-xs text-zinc-400">
+                  Estamos sincronizando tu cuenta con el sistema de facturación. Si tarda unos segundos, actualiza la página.
+                </p>
+                <button
+                  onClick={() => activeIdentificador && fetchCliente(activeIdentificador)}
+                  className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs"
+                >
+                  Recargar Tarjeta
+                </button>
+              </div>
+            )}
+
+            {/* Opción secundaria para consultar otra cédula/código */}
+            <div className="mt-12 text-center pt-6 border-t border-zinc-900">
+              <button
+                onClick={() => setShowManualSearch(!showManualSearch)}
+                className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors inline-flex items-center gap-1.5"
+              >
+                <span>¿Deseas consultar la tarjeta de otro familiar o cliente?</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showManualSearch ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showManualSearch && (
+                <form onSubmit={handleSubmit} className="mt-4 flex flex-col sm:flex-row gap-2.5 max-w-md mx-auto">
+                  <input
+                    type="text"
+                    value={identificadorInput}
+                    onChange={(e) => setIdentificadorInput(e.target.value)}
+                    placeholder="Ingresa cédula o código"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+                  />
+                  <button
+                    type="submit"
+                    className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-bold text-zinc-200"
+                  >
+                    Buscar
+                  </button>
+                </form>
+              )}
             </div>
-          </div>
-        ) : !loading && activeIdentificador ? (
-          <div className="max-w-md mx-auto p-8 rounded-3xl bg-zinc-950 border border-zinc-800 text-center space-y-4">
-            <ShieldAlert className="w-10 h-10 text-amber-400 mx-auto" />
-            <h3 className="text-lg font-bold text-white">Cliente no encontrado</h3>
-            <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-              No encontramos registros con el identificador &quot;{activeIdentificador}&quot;. Inicia sesión o solicita al cajero que registre tu compra con este código.
-            </p>
-            <button
-              onClick={() => {
-                setActiveIdentificador(null);
-                setIdentificadorInput('');
-              }}
-              className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 transition-colors"
-            >
-              Probar con otro código
-            </button>
-          </div>
-        ) : (
-          /* Estado Inicial: Explicación de cómo funciona el Club */
-          <div className="py-6 space-y-8">
-            <div className="text-center max-w-xl mx-auto space-y-2">
-              <h2 className="text-xl sm:text-2xl font-bold text-white">
-                ¿Cómo funciona tu Tarjeta Digital?
-              </h2>
-              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                Sin tarjetas de papel que se pierden o se dañan. Tu cuenta está 100% conectada a nuestro sistema de facturación.
+          </main>
+        </>
+      ) : (
+        /* ========================================================================= */
+        /* CASO 2: USUARIO SIN SESIÓN -> ELEMENTO ALTAMENTE LLAMATIVO PARA REGISTRO/LOGIN */
+        /* ========================================================================= */
+        <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16 space-y-10">
+          {/* Tarjeta Héroe VIP Ultra Llamativa */}
+          <section className="relative rounded-3xl p-6 sm:p-10 md:p-12 bg-gradient-to-br from-zinc-900 via-black to-zinc-950 border-2 border-amber-500/50 shadow-2xl shadow-amber-500/20 text-center overflow-hidden space-y-6">
+            {/* Efectos de luz de fondo */}
+            <div className="absolute -top-32 -right-32 w-72 h-72 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-32 -left-32 w-72 h-72 bg-orange-500/20 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Badge de encabezado */}
+            <div className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold bg-amber-500/15 text-amber-300 border border-amber-500/40 shadow-lg shadow-amber-500/10">
+              <Flame className="w-4 h-4 text-amber-400 animate-pulse" />
+              <span>Club de Fidelidad Oficial Q&apos;hubo Mor</span>
+            </div>
+
+            {/* Título de impacto */}
+            <div className="relative space-y-3 max-w-2xl mx-auto">
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-tight">
+                ¡Empieza a Acumular tus <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-orange-500">Puntos y Sellos</span>!
+              </h1>
+              <p className="text-sm sm:text-base md:text-lg text-zinc-300 leading-relaxed">
+                Inicia sesión o regístrate en <strong className="text-white">1 solo clic</strong> para obtener tu código exclusivo de cliente, ver tus sellos y canjear premios en el restaurante.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <div className="p-6 rounded-3xl bg-zinc-900/60 border border-zinc-800 space-y-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                  <Zap className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-white">1. Dicta tu Cédula o Código</h3>
-                <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                  Al pagar tu pedido en el restaurante, proporciona tu número al cajero. El sistema sumará tu sello automáticamente.
-                </p>
-              </div>
+            {/* BOTÓN GOOGLE EXTRA LLAMATIVO */}
+            <div className="relative pt-2 max-w-md mx-auto space-y-3">
+              <button
+                onClick={() => signIn('google', { callbackUrl: '/fidelidad?bienvenida=true' })}
+                className="w-full py-4 sm:py-5 px-6 rounded-2xl bg-white hover:bg-zinc-100 text-zinc-950 font-black text-base sm:text-lg transition-all flex items-center justify-center gap-3.5 shadow-2xl shadow-white/30 hover:shadow-white/40 hover:scale-[1.02] active:scale-95 border-2 border-white group cursor-pointer"
+              >
+                <Google className="w-6 h-6 shrink-0 group-hover:scale-110 transition-transform" />
+                <span>Continuar con Google</span>
+              </button>
 
-              <div className="p-6 rounded-3xl bg-zinc-900/60 border border-zinc-800 space-y-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                  <Star className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-white">2. Sello 5: 15% Descuento</h3>
-                <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                  A mitad de camino en tu ciclo de lealtad, recibe un 15% de descuento inmediato aplicable a tu consumo.
-                </p>
-              </div>
-
-              <div className="p-6 rounded-3xl bg-zinc-900/60 border border-zinc-800 space-y-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                  <Gift className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-white">3. Sello 10: Granizado 12oz GRATIS</h3>
-                <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                  Completa tu tarjeta de 10 sellos y disfruta tu Granizado de 12 onzas Totalmente GRATIS. ¡Luego reinicias para volver a ganar!
-                </p>
+              <div className="flex items-center justify-center gap-2 text-xs text-amber-400/90 font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                <span>Te generamos un código de cliente único de máx 6 dígitos sin pedir cédula</span>
               </div>
             </div>
 
-            {/* Banner de llamada a Misiones */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-amber-500/10 via-zinc-900 to-zinc-950 border border-amber-500/20 flex flex-col sm:flex-row items-center justify-between gap-5">
-              <div className="space-y-1.5 text-center sm:text-left">
-                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-400">
-                  Misiones y Sellos Adicionales
-                </span>
-                <h4 className="text-lg sm:text-xl font-bold text-white">
-                  ¿Quieres ganar sellos extra hoy mismo?
-                </h4>
-                <p className="text-xs sm:text-sm text-zinc-400 max-w-lg">
-                  Califícanos con 5 estrellas en Google Maps o síguenos en redes para sumar sellos adicionales a tu tarjeta de fidelidad.
-                </p>
-              </div>
+            {/* Botones secundarios (login o registro con correo) */}
+            <div className="relative flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 max-w-md mx-auto">
               <Link
-                href="/misiones"
-                className="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs sm:text-sm transition-all shadow-lg shadow-amber-500/20 shrink-0 flex items-center gap-2"
+                href="/login?callbackUrl=/fidelidad?bienvenida=true"
+                className="w-full sm:w-1/2 py-3 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 text-xs sm:text-sm font-bold border border-zinc-800 hover:border-amber-500/40 transition-colors flex items-center justify-center gap-2"
               >
-                <span>Ver Misiones Disponibles</span>
-                <ArrowRight className="w-4 h-4" />
+                <LogIn className="w-4 h-4 text-amber-400" />
+                <span>Ya tengo cuenta</span>
+              </Link>
+              <Link
+                href="/register?callbackUrl=/fidelidad?bienvenida=true"
+                className="w-full sm:w-1/2 py-3 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-200 text-xs sm:text-sm font-bold border border-zinc-800 hover:border-amber-500/40 transition-colors flex items-center justify-center gap-2"
+              >
+                <UserPlus className="w-4 h-4 text-amber-400" />
+                <span>Crear con correo</span>
               </Link>
             </div>
-          </div>
-        )}
-      </main>
+          </section>
+
+          {/* Grilla de Recompensas e Información de Beneficios */}
+          <section className="space-y-4">
+            <div className="text-center space-y-1">
+              <h2 className="text-xl sm:text-2xl font-black text-white">
+                ¿Qué ganas siendo parte del Club?
+              </h2>
+              <p className="text-xs sm:text-sm text-zinc-400">
+                Cada pedido facturado en caja suma compras automáticamente a tu tarjeta virtual.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+              {/* Tarjeta Beneficio 1 */}
+              <div className="p-6 rounded-3xl bg-zinc-900/70 border border-zinc-800 hover:border-amber-500/30 transition-all space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                  <Star className="w-6 h-6 fill-amber-400" />
+                </div>
+                <h3 className="text-base font-bold text-white">Sello 5: 15% Descuento</h3>
+                <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                  A mitad de camino en tu ciclo de lealtad recibes un 15% de descuento inmediato aplicable a tu consumo.
+                </p>
+              </div>
+
+              {/* Tarjeta Beneficio 2 (Granizado GRATIS) */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-amber-500/15 via-zinc-900 to-orange-500/10 border-2 border-amber-500/40 hover:border-amber-500/60 transition-all space-y-3 shadow-lg shadow-amber-500/5">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                  <Gift className="w-6 h-6" />
+                </div>
+                <h3 className="text-base font-black text-amber-300">Sello 10: Granizado 12oz GRATIS</h3>
+                <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                  Completa tu ciclo de 10 sellos y disfruta tu <strong className="text-amber-400">Granizado de 12 onzas Totalmente GRATIS</strong> en caja.
+                </p>
+              </div>
+
+              {/* Tarjeta Beneficio 3 (Misiones) */}
+              <div className="p-6 rounded-3xl bg-zinc-900/70 border border-zinc-800 hover:border-amber-500/30 transition-all space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                  <Zap className="w-6 h-6" />
+                </div>
+                <h3 className="text-base font-bold text-white">Misiones: +2 Sellos Extra</h3>
+                <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                  Califica en Google Maps y síguenos en redes para sumar 2 sellos extra a tu saldo desde hoy mismo.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Buscador secundario para clientes que ya tengan un código pero no hayan iniciado sesión */}
+          <section className="p-6 rounded-3xl bg-zinc-950/70 border border-zinc-900 text-center max-w-xl mx-auto space-y-4">
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-zinc-300 flex items-center justify-center gap-1.5">
+                <Search className="w-4 h-4 text-amber-400" />
+                <span>¿Ya tienes un código y solo quieres consultar?</span>
+              </h4>
+              <p className="text-xs text-zinc-500">
+                Ingresa tu número de cédula o código para consultar tu progreso sin iniciar sesión:
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
+              <input
+                type="text"
+                value={identificadorInput}
+                onChange={(e) => setIdentificadorInput(e.target.value)}
+                placeholder="Ej: 50934 o Cédula"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-extrabold text-xs transition-colors shrink-0"
+              >
+                {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : 'Consultar'}
+              </button>
+            </form>
+
+            {cliente && (
+              <div className="pt-4 text-left">
+                <DigitalLoyaltyCard cliente={cliente} isRealtimeConnected={isConnected} />
+              </div>
+            )}
+          </section>
+        </main>
+      )}
 
       {/* ========================================================= */}
-      {/* MODAL CELEBRATORIO DE BIENVENIDA */}
+      {/* MODAL CELEBRATORIO DE BIENVENIDA TRAS REGISTRO / LOGIN */}
       {/* ========================================================= */}
       {showBienvenida && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
