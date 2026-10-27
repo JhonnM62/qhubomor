@@ -47,3 +47,7 @@ prisma/data/*.sqlite-journal
 # Uploads directory
 public/uploads/*
 !public/uploads/.gitkeep
+!public/uploads/cartas
+!public/uploads/cartas/**
+!public/uploads/imagenesproductos
+!public/uploads/imagenesproductos/**

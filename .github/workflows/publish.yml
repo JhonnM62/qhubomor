@@ -106,6 +106,27 @@ jobs:
             echo "Pulling image: $IMAGE_URL"
             docker pull $IMAGE_URL
             
+            # Sincronizar imágenes del catálogo (cartas e imagenesproductos) desde la imagen al host
+            echo "Sincronizando archivos del catálogo a la carpeta persistente del host..."
+            TEMP_CONTAINER="temp-sync-$REPO_NAME"
+            docker rm -f $TEMP_CONTAINER 2>/dev/null || true
+            docker create --name $TEMP_CONTAINER $IMAGE_URL
+            
+            # Copiar cartas e imagenesproductos al host
+            docker cp $TEMP_CONTAINER:/app/public/uploads/. ${PROJECT_DIR}/uploads/ 2>/dev/null || true
+            
+            # Si no existe la base de datos en el host, inicializarla desde la imagen
+            if [ ! -f "${PROJECT_DIR}/data/data.sqlite" ]; then
+                echo "Inicializando base de datos SQLite en el host..."
+                docker cp $TEMP_CONTAINER:/app/prisma/data.sqlite ${PROJECT_DIR}/data/data.sqlite 2>/dev/null || true
+            fi
+            
+            docker rm -f $TEMP_CONTAINER 2>/dev/null || true
+
+            # Asegurar permisos correctos (777 y UID 1001) sobre los datos copiados
+            chmod -R 777 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads 2>/dev/null || true
+            chown -R 1001:1001 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads 2>/dev/null || true
+            
             # Detener y eliminar contenedor anterior si existe (tanto el nuevo como el anterior)
             CONTAINER_NAME="qhubomor-bussines-page"
             docker stop $CONTAINER_NAME 2>/dev/null || true

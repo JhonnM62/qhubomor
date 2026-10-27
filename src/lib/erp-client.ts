@@ -2,7 +2,7 @@
 const ERP_BASE_URL =
   process.env.NEXT_PUBLIC_ERP_API_URL ||
   process.env.ERP_API_URL ||
-  'https://api-qhubomor.autosystemprojects.site/api/v1';
+  'https://backendnestpv.autosystemprojects.site/api/v1';
 
 export interface VentaItemFidelidad {
   IDventas: string;

@@ -29,7 +29,7 @@ export function useFidelidadSocket(
 
     const erpSocketUrl =
       process.env.NEXT_PUBLIC_ERP_SOCKET_URL ||
-      'https://api-qhubomor.autosystemprojects.site/pos';
+      'https://backendnestpv.autosystemprojects.site/pos';
 
     const socket = io(erpSocketUrl, {
       transports: ['websocket', 'polling'],

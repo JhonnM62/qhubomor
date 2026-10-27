@@ -54,9 +54,12 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copiar archivos necesarios desde la etapa de build
-COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/static ./.next/static
+
+# Copiar public/uploads como plantilla de respaldo para inicializar volúmenes vacíos
+COPY --from=builder /app/public/uploads ./public_uploads_default
 
 # Asegurar que el usuario nextjs tenga permisos sobre el directorio de trabajo
 # Esto es crucial para que SQLite pueda escribir su archivo .db si se crea en runtime
