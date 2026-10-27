@@ -74,10 +74,6 @@ COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 # Copiar la carpeta prisma (schema y base de datos) con permisos correctos
 COPY --chown=nextjs:nodejs --from=builder /app/prisma ./prisma
 
-# Copiar script de inicialización para volúmenes persistentes
-COPY --chown=nextjs:nodejs entrypoint.sh ./entrypoint.sh
-RUN chmod +x ./entrypoint.sh
-
 # Cambiar al usuario no-root
 USER nextjs
 
@@ -88,5 +84,5 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Punto de entrada para inicializar datos y ejecutar la aplicación
-ENTRYPOINT ["./entrypoint.sh"]
+# Ejecutar la aplicación directamente con Node.js en modo standalone
+CMD ["node", "server.js"]

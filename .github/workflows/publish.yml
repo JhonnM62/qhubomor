@@ -75,6 +75,8 @@ jobs:
           GITHUB_ACTOR_LOWER: ${{ needs.create-docker-image.outputs.github_actor_lower }}
         run: |
           sshpass -p ${{ secrets.AUTH_PASS }} ssh -o StrictHostKeyChecking=no ${{ secrets.AUTH_SERVER }} << 'EOF'
+            set -e
+
             # Variables del deployment
             export REPO_NAME=${{ needs.create-docker-image.outputs.repo_name_lower }}
             export GITHUB_ACTOR_LOWER=${{ needs.create-docker-image.outputs.github_actor_lower }}
@@ -85,17 +87,17 @@ jobs:
             echo "Actor: $GITHUB_ACTOR_LOWER"  
             echo "Image URL: $IMAGE_URL"
 
-            # Crear directorio del proyecto y carpetas de datos persistentes
-            PROJECT_DIR="~/proyectos/$REPO_NAME"
+            # Crear directorio del proyecto y carpetas de datos persistentes con ruta absoluta
+            PROJECT_DIR="$HOME/proyectos/$REPO_NAME"
             mkdir -p ${PROJECT_DIR}/data
             mkdir -p ${PROJECT_DIR}/uploads
             echo '${{ secrets.ENV_FILE_CONTENT }}' > ${PROJECT_DIR}/.env
             # Eliminar comillas dobles en el servidor también
             sed -i 's/"//g' ${PROJECT_DIR}/.env
 
-            # Asegurar permisos correctos para el usuario contenedor (UID 1001)
+            # Asegurar permisos correctos (777 y UID 1001) para que el contenedor Next.js pueda escribir
+            chmod -R 777 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads 2>/dev/null || true
             chown -R 1001:1001 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads 2>/dev/null || true
-            chmod -R 775 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads 2>/dev/null || true
 
             # Login al registry con usuario en minúsculas
             echo ${{ secrets.TOKEN_QHUBOMOR }} | docker login ghcr.io -u "$GITHUB_ACTOR_LOWER" --password-stdin
@@ -104,10 +106,12 @@ jobs:
             echo "Pulling image: $IMAGE_URL"
             docker pull $IMAGE_URL
             
-            # Detener y eliminar contenedor anterior si existe
-            CONTAINER_NAME="$REPO_NAME-frontend"
+            # Detener y eliminar contenedor anterior si existe (tanto el nuevo como el anterior)
+            CONTAINER_NAME="qhubomor-bussines-page"
             docker stop $CONTAINER_NAME 2>/dev/null || true
             docker rm $CONTAINER_NAME 2>/dev/null || true
+            docker stop "$REPO_NAME-frontend" 2>/dev/null || true
+            docker rm "$REPO_NAME-frontend" 2>/dev/null || true
             
             # Ejecutar nuevo contenedor con puerto 8050 y VOLUMENES PERSISTENTES
             echo "Starting new container with persistent volumes: $CONTAINER_NAME"
@@ -122,16 +126,26 @@ jobs:
               
             # Verificar que el contenedor esté corriendo
             sleep 10
-            if docker ps | grep -q $CONTAINER_NAME; then
-                echo "✅ Frontend container deployed successfully!"
-                docker ps | grep $CONTAINER_NAME
+            if docker ps --format '{{.Names}}' | grep -Eq "^${CONTAINER_NAME}$"; then
+                echo "✅ Frontend container is running!"
+                docker ps --filter "name=${CONTAINER_NAME}"
                 
                 # Verificar que el servicio responda
                 echo "Checking service health..."
-                curl -f http://localhost:8050 || echo "Warning: Service might need more time to start"
+                for i in 1 2 3 4 5; do
+                    if curl -sf http://localhost:8050 > /dev/null; then
+                        echo "✅ Service is responding on port 8050!"
+                        break
+                    fi
+                    echo "Waiting for service to respond (attempt $i/5)..."
+                    sleep 3
+                done
+                
+                echo "--- Logs recientes del contenedor ---"
+                docker logs --tail 30 $CONTAINER_NAME
             else
                 echo "❌ Container failed to start"
-                docker logs $CONTAINER_NAME
+                docker logs --tail 50 $CONTAINER_NAME 2>/dev/null || true
                 exit 1
             fi
           EOF
