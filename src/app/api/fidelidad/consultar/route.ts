@@ -13,14 +13,14 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const data = await consultarFidelidadCliente(identificador);
-    if (!data) {
+    const rawData = await consultarFidelidadCliente(identificador);
+    if (!rawData) {
       return NextResponse.json(
         { error: 'Cliente no encontrado en el sistema POS' },
         { status: 404 }
       );
     }
-
+    const data = (rawData as any)?.data ?? rawData;
     return NextResponse.json(data);
   } catch (error: any) {
     return NextResponse.json(

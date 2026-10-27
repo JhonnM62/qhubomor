@@ -52,7 +52,8 @@ export async function consultarFidelidadCliente(
       throw new Error(`Error ${res.status} al consultar fidelidad`);
     }
 
-    const data: FidelidadClienteResponse = await res.json();
+    const json = await res.json();
+    const data: FidelidadClienteResponse = json?.data ?? json;
     return data;
   } catch (error) {
     console.error('Error conectando con API ERP:', error);

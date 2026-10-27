@@ -8,14 +8,15 @@ interface StampGridProps {
 }
 
 export function StampGrid({ contador }: StampGridProps) {
-  const currentStamps = Math.min(Math.max(contador, 0), 10);
+  const num = typeof contador === 'number' && !isNaN(contador) ? contador : Number(contador) || 0;
+  const currentStamps = Math.min(Math.max(num, 0), 10);
 
   return (
     <div className="w-full">
       {/* Indicador superior */}
       <div className="flex items-center justify-between text-xs font-semibold text-zinc-400 mb-2">
         <span>Progreso del ciclo</span>
-        <span className="text-amber-400">{currentStamps} de 10 sellos</span>
+        <span className="text-amber-400 font-bold">{currentStamps} de 10 sellos</span>
       </div>
 
       {/* Cuadrícula de 10 sellos (2 filas de 5) */}

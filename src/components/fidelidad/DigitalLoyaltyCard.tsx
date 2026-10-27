@@ -41,9 +41,9 @@ export function DigitalLoyaltyCard({
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-xl lg:max-w-none mx-auto">
       {/* Tarjeta Virtual Obsidian / Gold */}
-      <div className="relative rounded-3xl p-6 bg-gradient-to-br from-zinc-900 via-black to-zinc-950 border border-amber-500/30 shadow-2xl shadow-amber-500/10 overflow-hidden">
+      <div className="relative rounded-3xl p-6 sm:p-7 bg-gradient-to-br from-zinc-900 via-black to-zinc-950 border border-amber-500/30 shadow-2xl shadow-amber-500/10 overflow-hidden">
         {/* Resplandor decorativo de fondo */}
         <div className="absolute -top-20 -right-20 w-44 h-44 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-20 -left-20 w-44 h-44 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -65,32 +65,52 @@ export function DigitalLoyaltyCard({
                 </span>
               )}
             </div>
-            <h2 className="text-xl font-extrabold text-white tracking-tight mt-0.5">
+            <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight mt-0.5">
               {cliente.nombre}
             </h2>
           </div>
 
-          <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+          <div className="p-2 sm:p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
             <ShieldCheck className="w-6 h-6" />
           </div>
         </div>
 
-        {/* Datos identificadores (Cédula y Código) */}
-        <div className="relative z-10 grid grid-cols-2 gap-3 mb-5 p-3 rounded-2xl bg-zinc-950/70 border border-zinc-800/80">
-          <div>
+        {/* Datos identificadores (Cédula, WhatsApp, Código Caja, Compras) */}
+        <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mb-5 p-3 sm:p-4 rounded-2xl bg-zinc-950/70 border border-zinc-800/80">
+          <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/40">
             <span className="text-[10px] uppercase tracking-wider font-bold text-zinc-500 block">
               Cédula
             </span>
-            <span className="text-sm font-mono font-bold text-zinc-200">
+            <span className="text-xs sm:text-sm font-mono font-bold text-zinc-200 truncate block mt-0.5">
               {cliente.cedula || 'No registrada'}
             </span>
           </div>
-          <div className="text-right">
+          <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/40 text-right sm:text-left">
             <span className="text-[10px] uppercase tracking-wider font-bold text-zinc-500 block">
-              Código Caja
+              Código POS
             </span>
-            <span className="text-sm font-mono font-bold text-amber-400">
+            <span className="text-xs sm:text-sm font-mono font-bold text-amber-400 block mt-0.5">
               #{cliente.IDcliente}
+            </span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/40">
+            <span className="text-[10px] uppercase tracking-wider font-bold text-zinc-500 block">
+              WhatsApp
+            </span>
+            <span className="text-xs sm:text-sm font-mono font-bold text-emerald-400 truncate block mt-0.5">
+              {cliente.whatsapp
+                ? cliente.whatsapp.startsWith('57')
+                  ? `+57 ${cliente.whatsapp.slice(2)}`
+                  : cliente.whatsapp
+                : 'No registrado'}
+            </span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/40 text-right sm:text-left">
+            <span className="text-[10px] uppercase tracking-wider font-bold text-zinc-500 block">
+              Compras Totales
+            </span>
+            <span className="text-xs sm:text-sm font-mono font-bold text-zinc-200 block mt-0.5">
+              {cliente.comprasTotales || cliente.contador || 0} compras
             </span>
           </div>
         </div>
