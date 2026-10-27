@@ -1,8 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { PrizeType, SocialPlatform } from "@prisma/client";
 import { env } from "@/lib/env";
+
+const SocialPlatform = {
+  FACEBOOK: "FACEBOOK",
+  INSTAGRAM: "INSTAGRAM",
+  TIKTOK: "TIKTOK",
+} as const;
+
+const PrizeType = {
+  DISCOUNT_15: "DISCOUNT_15",
+  DISCOUNT_50: "DISCOUNT_50",
+  DISCOUNT_100: "DISCOUNT_100",
+  GRANIZADO_8OZ: "GRANIZADO_8OZ",
+} as const;
 
 function randomCode(prefix: string) {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";

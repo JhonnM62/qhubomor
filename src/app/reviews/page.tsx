@@ -16,7 +16,7 @@ function ReviewsContent() {
   const [isHandlingAuth, setIsHandlingAuth] = useState(false)
 
   useEffect(() => {
-    const action = searchParams.get("action")
+    const action = searchParams?.get("action")
     if (action === "write") {
       if (status === "authenticated") {
         setShowForm(true)

@@ -14,7 +14,7 @@ import { Suspense } from "react";
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/games";
+  const callbackUrl = searchParams?.get("callbackUrl") || "/games";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);

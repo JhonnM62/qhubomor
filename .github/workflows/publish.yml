@@ -85,12 +85,17 @@ jobs:
             echo "Actor: $GITHUB_ACTOR_LOWER"  
             echo "Image URL: $IMAGE_URL"
 
-            # Crear directorio del proyecto
+            # Crear directorio del proyecto y carpetas de datos persistentes
             PROJECT_DIR="~/proyectos/$REPO_NAME"
-            mkdir -p $PROJECT_DIR
+            mkdir -p ${PROJECT_DIR}/data
+            mkdir -p ${PROJECT_DIR}/uploads
             echo '${{ secrets.ENV_FILE_CONTENT }}' > ${PROJECT_DIR}/.env
             # Eliminar comillas dobles en el servidor también
             sed -i 's/"//g' ${PROJECT_DIR}/.env
+
+            # Asegurar permisos correctos para el usuario contenedor (UID 1001)
+            chown -R 1001:1001 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads 2>/dev/null || true
+            chmod -R 775 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads 2>/dev/null || true
 
             # Login al registry con usuario en minúsculas
             echo ${{ secrets.TOKEN_QHUBOMOR }} | docker login ghcr.io -u "$GITHUB_ACTOR_LOWER" --password-stdin
@@ -104,13 +109,15 @@ jobs:
             docker stop $CONTAINER_NAME 2>/dev/null || true
             docker rm $CONTAINER_NAME 2>/dev/null || true
             
-            # Ejecutar nuevo contenedor con puerto 8050
-            echo "Starting new container: $CONTAINER_NAME"
+            # Ejecutar nuevo contenedor con puerto 8050 y VOLUMENES PERSISTENTES
+            echo "Starting new container with persistent volumes: $CONTAINER_NAME"
             docker run -d \
               --name $CONTAINER_NAME \
               -p 8050:3000 \
               --restart always \
               --env-file ${PROJECT_DIR}/.env \
+              -v ${PROJECT_DIR}/data:/app/prisma/data \
+              -v ${PROJECT_DIR}/uploads:/app/public/uploads \
               $IMAGE_URL
               
             # Verificar que el contenedor esté corriendo

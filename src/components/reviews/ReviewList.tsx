@@ -10,21 +10,6 @@ import { toast } from "sonner"
 import { ReviewForm } from "./ReviewForm"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/dialog" // Note: Assuming standard shadcn path, check if exists or use window.confirm for simplicity first if dialog not present
-// Actually, let's use standard window.confirm or just simple state for now if Dialog component path is unsure. 
-// I saw dialog.tsx in src/components/ui/dialog.tsx so it should work. But imports might differ.
-// Let's stick to standard imports if I'm not 100% sure of the exports.
-// I saw `dialog.tsx` in the LS output.
 
 // Define types locally to match API response
 interface ReviewUser {
