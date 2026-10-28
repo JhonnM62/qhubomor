@@ -203,6 +203,12 @@ export default function MisionesPage() {
           nombre: nombre.trim() || session?.user?.name || undefined,
           whatsapp: whatsapp.trim() || undefined,
           tipoMision: 'GOOGLE_REVIEW',
+          capturas: [
+            {
+              plataforma: 'GOOGLE_MAPS',
+              base64: googleScreenshot,
+            },
+          ],
         }),
       });
 
@@ -249,6 +255,11 @@ export default function MisionesPage() {
       return;
     }
 
+    const capturas: Array<{ plataforma: string; base64: string }> = [];
+    if (igScreenshot) capturas.push({ plataforma: 'INSTAGRAM', base64: igScreenshot });
+    if (tiktokScreenshot) capturas.push({ plataforma: 'TIKTOK', base64: tiktokScreenshot });
+    if (fbScreenshot) capturas.push({ plataforma: 'FACEBOOK', base64: fbScreenshot });
+
     setLoadingSocial(true);
     try {
       const res = await fetch('/api/fidelidad/reclamar-mision', {
@@ -259,6 +270,7 @@ export default function MisionesPage() {
           nombre: nombre.trim() || session?.user?.name || undefined,
           whatsapp: whatsapp.trim() || undefined,
           tipoMision: 'REDES_SOCIALES',
+          capturas,
         }),
       });
 
@@ -342,7 +354,7 @@ export default function MisionesPage() {
             Gana Sellos Extra para tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-500">Tarjeta de Fidelidad</span>
           </h1>
           <p className="text-sm sm:text-base text-zinc-400 max-w-3xl leading-relaxed">
-            Realiza las siguientes labores, ingresa tu cédula o tarjeta de identidad y el sistema sumará automáticamente una compra por sello a tu tarjeta digital. Al llegar a los 10 sellos reclamas tu <strong className="text-amber-400 font-bold">Granizado de 12 onzas Totalmente GRATIS</strong> en caja.
+            Realiza las siguientes labores, ingresa tu cédula o código de cliente y el sistema sumará automáticamente una compra por sello a tu tarjeta digital. Al llegar a los 10 sellos reclamas tu <strong className="text-amber-400 font-bold">recompensa de Granizado de 12 onzas</strong> en caja.
           </p>
         </div>
 
@@ -502,7 +514,7 @@ export default function MisionesPage() {
                   Premio: +1 Sello Extra directo a tu Tarjeta
                 </strong>
                 <span className="text-zinc-400 text-xs">
-                  Acredita 1 compra a tu saldo de lealtad para acercarte a tu Granizado de 12oz Totalmente GRATIS.
+                  Acredita 1 compra a tu saldo de lealtad para avanzar en tu Tarjeta de Fidelidad.
                 </span>
               </div>
             </div>
@@ -561,6 +573,13 @@ export default function MisionesPage() {
                   </div>
                 )}
               </div>
+
+              <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-[11px] text-zinc-400 flex items-start gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  <strong className="text-zinc-300">Auditoría con IA:</strong> Se verificará automáticamente con Gemini Vision que tu reseña contenga 5 estrellas y sea reciente.
+                </span>
+              </div>
             </div>
 
             {/* Botón de Acreditación */}
@@ -572,7 +591,7 @@ export default function MisionesPage() {
               {loadingGoogle ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Acreditando sello en el POS...</span>
+                  <span>Auditando captura con Inteligencia Artificial...</span>
                 </>
               ) : googleClaimed ? (
                 <>
@@ -720,6 +739,13 @@ export default function MisionesPage() {
                   </label>
                 </div>
               </div>
+
+              <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-[11px] text-zinc-400 flex items-start gap-2">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                <span>
+                  <strong className="text-zinc-300">Auditoría con IA:</strong> Se verificará con Gemini Vision que sigas a <strong className="text-amber-400">@q.hubo_mor</strong> (botón &ldquo;Siguiendo&rdquo; o &ldquo;Following&rdquo;) y que la captura sea reciente.
+                </span>
+              </div>
             </div>
 
             {/* Botón de Acreditación */}
@@ -731,7 +757,7 @@ export default function MisionesPage() {
               {loadingSocial ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Acreditando sello de redes...</span>
+                  <span>Auditando capturas con Inteligencia Artificial...</span>
                 </>
               ) : socialClaimed ? (
                 <>
@@ -758,7 +784,7 @@ export default function MisionesPage() {
               ¿Listo para consultar tu progreso?
             </h4>
             <p className="text-xs sm:text-sm text-zinc-400 max-w-lg leading-relaxed">
-              Recuerda: <strong>Sello 5 = 15% Descuento</strong> y <strong>Sello 10 = Granizado de 12 onzas Totalmente GRATIS</strong>.
+              Recuerda: <strong>Sello 5 = 15% Descuento</strong> y <strong>Sello 10 = Recompensa de Granizado de 12 onzas</strong>.
             </p>
           </div>
 
@@ -803,7 +829,7 @@ export default function MisionesPage() {
                 Inicia Sesión para Acreditar tus Sellos
               </h3>
               <p className="text-xs sm:text-sm text-zinc-400 mt-2 leading-relaxed">
-                Para validar tus labores y registrar tus compras hacia el <strong className="text-amber-400 font-bold">Granizado de 12 onzas Totalmente GRATIS</strong>, debes acceder a tu cuenta.
+                Para validar tus labores y registrar tus compras hacia tu <strong className="text-amber-400 font-bold">recompensa de Granizado de 12 onzas</strong>, debes acceder a tu cuenta.
               </p>
             </div>
 

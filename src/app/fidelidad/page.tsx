@@ -381,7 +381,7 @@ function FidelidadContent() {
                       </li>
                       <li className="flex items-start gap-2.5">
                         <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                        <span><strong className="text-zinc-200">Sello 10:</strong> Granizado de 12 onzas Totalmente GRATIS.</span>
+                        <span><strong className="text-zinc-200">Sello 10:</strong> Recompensa de Granizado de 12 onzas.</span>
                       </li>
                       <li className="flex items-start gap-2.5">
                         <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
@@ -536,9 +536,9 @@ function FidelidadContent() {
                 <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
                   <Gift className="w-6 h-6" />
                 </div>
-                <h3 className="text-base font-black text-amber-300">Sello 10: Granizado 12oz GRATIS</h3>
+                <h3 className="text-base font-black text-amber-300">Sello 10: Granizado 12oz</h3>
                 <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-                  Completa tu ciclo de 10 sellos y disfruta tu <strong className="text-amber-400">Granizado de 12 onzas Totalmente GRATIS</strong> en caja.
+                  Completa tu ciclo de 10 sellos y reclama tu <strong className="text-amber-400">Granizado de 12 onzas</strong> en caja.
                 </p>
               </div>
 

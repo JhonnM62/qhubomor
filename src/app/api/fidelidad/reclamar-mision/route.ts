@@ -4,7 +4,7 @@ import { reclamarMisionCliente } from '@/lib/erp-client';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { cedula, nombre, whatsapp, tipoMision } = body;
+    const { cedula, nombre, whatsapp, tipoMision, capturas } = body;
 
     if (!cedula || !cedula.toString().trim()) {
       return NextResponse.json(
@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
       nombre: nombre?.trim(),
       whatsapp: whatsapp?.trim(),
       tipoMision,
+      capturas,
     });
 
     if (!result.success) {

@@ -61,11 +61,17 @@ export async function consultarFidelidadCliente(
   }
 }
 
+export interface CapturaEvidenciaItem {
+  plataforma: 'GOOGLE_MAPS' | 'INSTAGRAM' | 'TIKTOK' | 'FACEBOOK' | string;
+  base64: string;
+}
+
 export interface ReclamarMisionPayload {
   cedula: string;
   nombre?: string;
   whatsapp?: string;
   tipoMision: 'GOOGLE_REVIEW' | 'REDES_SOCIALES';
+  capturas?: CapturaEvidenciaItem[];
 }
 
 export async function reclamarMisionCliente(
