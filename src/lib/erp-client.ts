@@ -44,7 +44,7 @@ export async function consultarFidelidadCliente(
       headers: {
         'Content-Type': 'application/json',
       },
-      next: { revalidate: 10 },
+      cache: 'no-store',
     });
 
     if (!res.ok) {

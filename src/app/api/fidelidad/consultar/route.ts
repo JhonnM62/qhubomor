@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { consultarFidelidadCliente } from '@/lib/erp-client';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const identificador = searchParams.get('identificador');
@@ -17,11 +20,22 @@ export async function GET(req: NextRequest) {
     if (!rawData) {
       return NextResponse.json(
         { error: 'Cliente no encontrado en el sistema POS' },
-        { status: 404 }
+        {
+          status: 404,
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+        }
       );
     }
     const data = (rawData as any)?.data ?? rawData;
-    return NextResponse.json(data);
+    return NextResponse.json(data, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
+    });
   } catch (error: any) {
     return NextResponse.json(
       { error: error?.message || 'Error al consultar fidelidad' },

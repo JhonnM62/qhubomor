@@ -215,6 +215,7 @@ export default function MisionesPage() {
       if (typeof window !== 'undefined') {
         localStorage.setItem('qhubomor_fidelidad_id', docOrCode);
         localStorage.setItem('qhubomor_mision_google_done', 'true');
+        window.dispatchEvent(new CustomEvent('fidelidad:actualizada'));
       }
 
       toast.success(
@@ -270,6 +271,7 @@ export default function MisionesPage() {
       if (typeof window !== 'undefined') {
         localStorage.setItem('qhubomor_fidelidad_id', docOrCode);
         localStorage.setItem('qhubomor_mision_social_done', 'true');
+        window.dispatchEvent(new CustomEvent('fidelidad:actualizada'));
       }
 
       toast.success(

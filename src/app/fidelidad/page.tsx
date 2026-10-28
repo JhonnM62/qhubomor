@@ -121,7 +121,16 @@ function FidelidadContent() {
     if (!isSilent) setLoading(true);
 
     try {
-      const res = await fetch(`/api/fidelidad/consultar?identificador=${encodeURIComponent(id.trim())}`);
+      const res = await fetch(
+        `/api/fidelidad/consultar?identificador=${encodeURIComponent(id.trim())}&_t=${Date.now()}`,
+        {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+          },
+        }
+      );
       if (!res.ok) {
         if (res.status === 404) {
           if (!isSilent) toast.error('No se encontró cliente con esa cédula o código en el POS.');
@@ -154,6 +163,24 @@ function FidelidadContent() {
     if (activeIdentificador) {
       fetchCliente(activeIdentificador);
     }
+  }, [activeIdentificador, fetchCliente]);
+
+  // Refrescar automáticamente al regresar a la pestaña o al navegar
+  useEffect(() => {
+    const handleRefresh = () => {
+      if (activeIdentificador) {
+        fetchCliente(activeIdentificador, true);
+      }
+    };
+    window.addEventListener('focus', handleRefresh);
+    window.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') handleRefresh();
+    });
+    window.addEventListener('fidelidad:actualizada', handleRefresh);
+    return () => {
+      window.removeEventListener('focus', handleRefresh);
+      window.removeEventListener('fidelidad:actualizada', handleRefresh);
+    };
   }, [activeIdentificador, fetchCliente]);
 
   // Manejo de eventos en tiempo real vía WebSocket
