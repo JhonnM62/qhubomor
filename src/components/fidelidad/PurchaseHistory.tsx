@@ -49,7 +49,7 @@ export function PurchaseHistory({ ventas, comprasTotales = 0, contador = 0 }: Pu
             {total} {total === 1 ? 'Compra Registrada' : 'Compras Registradas'} en el POS
           </h4>
           <p className="text-xs sm:text-sm text-zinc-400 mt-2.5 max-w-md mx-auto leading-relaxed">
-            Tienes <strong className="text-amber-400 font-bold">{total} compras acumuladas</strong> que acreditan tus sellos y descuentos actuales en caja. Cada nueva compra facturada en el restaurante se desglosará automáticamente aquí con su detalle de productos.
+            Tienes <strong className="text-amber-400 font-bold">{total} compras acumuladas</strong> que acreditan tus sellos y descuentos actuales (válidos en caja y domicilios). Cada nueva compra facturada en el restaurante o por WhatsApp se desglosará automáticamente aquí con su detalle de productos.
           </p>
         </div>
       );
@@ -60,7 +60,7 @@ export function PurchaseHistory({ ventas, comprasTotales = 0, contador = 0 }: Pu
         <Receipt className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
         <h4 className="text-base font-semibold text-zinc-300">Sin compras registradas aún</h4>
         <p className="text-xs sm:text-sm text-zinc-500 mt-1.5 max-w-sm mx-auto">
-          Tus compras se reflejarán automáticamente en cuanto el cajero facture con tu cédula o código.
+          Tus compras se reflejarán automáticamente en cuanto el cajero facture con tu código o lo menciones al pedir tu domicilio.
         </p>
       </div>
     );
@@ -71,7 +71,7 @@ export function PurchaseHistory({ ventas, comprasTotales = 0, contador = 0 }: Pu
       <div className="flex items-center justify-between px-1">
         <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
           <Receipt className="w-4 h-4 text-amber-500" />
-          <span>Compras Registradas en Caja</span>
+          <span>Compras Registradas (Caja y Domicilios)</span>
         </h3>
         <span className="text-xs text-zinc-500 font-mono">
           {ventas.length} {ventas.length === 1 ? 'ticket' : 'tickets'} {comprasTotales > ventas.length ? `(de ${comprasTotales} compras)` : ''}

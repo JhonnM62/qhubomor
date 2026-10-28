@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Copy,
   Check,
+  Bike,
 } from 'lucide-react';
 
 interface DigitalLoyaltyCardProps {
@@ -33,6 +34,12 @@ export function DigitalLoyaltyCard({
     cedula: cliente.cedula,
     contador: cliente.contador,
   });
+
+  const whatsappDeliveryUrl = `https://wa.me/573044430427?text=${encodeURIComponent(
+    cliente.granizadoGratis
+      ? `¡Hola Q'hubo Mor! Acabo de completar mis 10 sellos de fidelidad con mi código #${cliente.IDcliente} (${cliente.nombre}) y quiero reclamar mi Granizado de 12oz GRATIS a domicilio 🍧`
+      : `¡Hola Q'hubo Mor! Quiero pedir a domicilio.\nCliente: ${cliente.nombre}\nCódigo POS: #${cliente.IDcliente}`
+  )}`;
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(String(cliente.cedula || cliente.IDcliente));
@@ -123,16 +130,27 @@ export function DigitalLoyaltyCard({
         {/* Banner de Estado / Recompensa Activa */}
         <div className="relative z-10 mb-5">
           {cliente.granizadoGratis ? (
-            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 text-black flex items-center gap-3 shadow-lg shadow-amber-500/20">
-              <Award className="w-6 h-6 shrink-0" />
-              <div className="flex-1">
-                <span className="text-xs font-black uppercase tracking-wider block">
-                  Granizado de 12oz Totalmente GRATIS
-                </span>
-                <span className="text-[11px] font-medium leading-tight block">
-                  ¡Ciclo de 10 sellos completado! Presenta esta pantalla en caja para reclamar tu Granizado de 12 onzas Totalmente GRATIS.
-                </span>
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-orange-500 text-black shadow-lg shadow-amber-500/20 space-y-2.5">
+              <div className="flex items-center gap-3">
+                <Award className="w-6 h-6 shrink-0" />
+                <div className="flex-1">
+                  <span className="text-xs font-black uppercase tracking-wider block">
+                    ¡Granizado de 12oz GRATIS Disponible!
+                  </span>
+                  <span className="text-[11px] font-semibold leading-tight block">
+                    ¡Ciclo de 10 sellos completado! Reclámalo gratis en caja o en tus pedidos a domicilio indicando tu código #{cliente.IDcliente}.
+                  </span>
+                </div>
               </div>
+              <a
+                href={whatsappDeliveryUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2 px-3 rounded-xl bg-black hover:bg-zinc-900 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-98"
+              >
+                <Bike className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Reclamar a Domicilio por WhatsApp</span>
+              </a>
             </div>
           ) : cliente.hito5 ? (
             <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 flex items-center gap-3">
@@ -142,7 +160,7 @@ export function DigitalLoyaltyCard({
                   Hito 5 Alcanzado: 15% Descuento
                 </span>
                 <span className="text-[11px] text-zinc-400 leading-tight block">
-                  Faltan {cliente.sellosRestantesParaGranizado} compras para tu Granizado de 12oz Totalmente GRATIS.
+                  Faltan {cliente.sellosRestantesParaGranizado} compras para tu Granizado de 12oz GRATIS (válido en caja o a domicilio).
                 </span>
               </div>
             </div>
@@ -150,29 +168,45 @@ export function DigitalLoyaltyCard({
             <div className="p-3 rounded-2xl bg-zinc-950/60 border border-zinc-800 text-zinc-400 flex items-center gap-3">
               <Zap className="w-5 h-5 shrink-0 text-amber-400" />
               <span className="text-xs">
-                Faltan <strong className="text-zinc-200">{cliente.sellosRestantesParaGranizado} compras</strong> para tu Granizado de 12oz Totalmente GRATIS.
+                Faltan <strong className="text-zinc-200">{cliente.sellosRestantesParaGranizado} compras</strong> para tu Granizado de 12oz GRATIS (en caja o a domicilio).
               </span>
             </div>
           )}
         </div>
 
-        {/* Botón para mostrar código QR al cajero */}
-        <div className="relative z-10 flex gap-2">
-          <button
-            onClick={() => setShowQrModal(true)}
-            className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition-colors shadow-md shadow-amber-500/20"
-          >
-            <QrCode className="w-4 h-4" />
-            <span>Mostrar QR en Caja</span>
-          </button>
+        {/* Acciones: Mostrar QR en Caja, Pedir a Domicilio y Copiar Código */}
+        <div className="relative z-10 space-y-2">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowQrModal(true)}
+              className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition-colors shadow-md shadow-amber-500/20"
+            >
+              <QrCode className="w-4 h-4" />
+              <span>Mostrar QR en Caja</span>
+            </button>
 
-          <button
-            onClick={handleCopyCode}
-            className="flex items-center justify-center gap-1.5 py-3 px-3.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium border border-zinc-700 transition-colors"
-            title="Copiar código para dictar"
-          >
-            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-          </button>
+            <a
+              href={whatsappDeliveryUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-1.5 py-3 px-3.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-colors"
+              title="Pedir a Domicilio por WhatsApp indicando tu código"
+            >
+              <Bike className="w-4 h-4" />
+              <span className="hidden sm:inline">Domicilio</span>
+            </a>
+
+            <button
+              onClick={handleCopyCode}
+              className="flex items-center justify-center gap-1.5 py-3 px-3.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-medium border border-zinc-700 transition-colors"
+              title="Copiar código para dictar"
+            >
+              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+            </button>
+          </div>
+          <p className="text-[10px] text-center text-zinc-500">
+            💡 Válido para acumular y redimir tanto en caja como en domicilios por WhatsApp
+          </p>
         </div>
       </div>
 
@@ -184,7 +218,7 @@ export function DigitalLoyaltyCard({
               Escanea en el Punto de Venta
             </h3>
             <p className="text-xs text-zinc-400 mb-5">
-              Presenta este código al cajero para registrar tu compra o canjear tus premios.
+              Presenta este código al cajero o menciónalo en tus pedidos a domicilio para registrar compras y canjear tus premios.
             </p>
 
             <div className="bg-white p-4 rounded-2xl inline-block shadow-inner mb-4">

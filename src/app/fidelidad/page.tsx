@@ -269,7 +269,7 @@ function FidelidadContent() {
                   ¡Hola, <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-300 to-orange-400">{session.user?.name || 'Cliente VIP'}</span>!
                 </h1>
                 <p className="text-xs sm:text-sm text-zinc-400 max-w-xl leading-relaxed">
-                  Aquí tienes tu balance de puntos y sellos en vivo. Dicta tu código en caja al momento de comprar para acumular sellos y canjear tus premios.
+                  Aquí tienes tu balance de puntos y sellos en vivo. Dicta tu código en caja o menciónalo en tus pedidos a domicilio para acumular sellos y canjear tus premios.
                 </p>
               </div>
 
@@ -288,8 +288,8 @@ function FidelidadContent() {
                   </div>
                   <span className="text-[10px] text-amber-400/90 font-semibold block mt-0.5">
                     {cliente?.granizadoGratis
-                      ? '¡Granizado Disponible!'
-                      : `${Math.max(0, 10 - (cliente?.contador || 0))} para Granizado`}
+                      ? '¡Granizado Gratis Disponible!'
+                      : `${Math.max(0, 10 - (cliente?.contador || 0))} para Granizado Gratis`}
                   </span>
                 </div>
 
@@ -319,7 +319,7 @@ function FidelidadContent() {
                     {cliente?.comprasTotales || cliente?.contador || 0}
                   </span>
                   <span className="text-[10px] text-zinc-500 font-medium block mt-0.5">
-                    Registradas en caja
+                    Caja y Domicilios
                   </span>
                 </div>
               </div>
@@ -381,7 +381,7 @@ function FidelidadContent() {
                       </li>
                       <li className="flex items-start gap-2.5">
                         <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                        <span><strong className="text-zinc-200">Sello 10:</strong> Recompensa de Granizado de 12 onzas.</span>
+                        <span><strong className="text-zinc-200">Sello 10:</strong> Granizado de 12 onzas GRATIS (válido en caja o a domicilio).</span>
                       </li>
                       <li className="flex items-start gap-2.5">
                         <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
@@ -515,7 +515,7 @@ function FidelidadContent() {
                 ¿Qué ganas siendo parte del Club?
               </h2>
               <p className="text-xs sm:text-sm text-zinc-400">
-                Cada pedido facturado en caja suma compras automáticamente a tu tarjeta virtual.
+                Cada pedido facturado en caja o solicitado por domicilio suma compras automáticamente a tu tarjeta virtual.
               </p>
             </div>
 
@@ -536,9 +536,9 @@ function FidelidadContent() {
                 <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
                   <Gift className="w-6 h-6" />
                 </div>
-                <h3 className="text-base font-black text-amber-300">Sello 10: Granizado 12oz</h3>
+                <h3 className="text-base font-black text-amber-300">Sello 10: Granizado 12oz GRATIS</h3>
                 <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
-                  Completa tu ciclo de 10 sellos y reclama tu <strong className="text-amber-400">Granizado de 12 onzas</strong> en caja.
+                  Completa tu ciclo de 10 sellos y reclama tu <strong className="text-amber-400">Granizado de 12 onzas GRATIS</strong> tanto en caja física como a través de nuestros domicilios.
                 </p>
               </div>
 
@@ -643,7 +643,7 @@ function FidelidadContent() {
                 </button>
               </div>
               <p className="text-[11px] text-zinc-400">
-                Solo debes dictar este código en caja al momento de comprar para acumular sellos.
+                Solo debes dictar este código en caja o mencionarlo en tus pedidos a domicilio para acumular sellos y canjear tu granizado gratis.
               </p>
             </div>
 

@@ -354,7 +354,7 @@ export default function MisionesPage() {
             Gana Sellos Extra para tu <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-500">Tarjeta de Fidelidad</span>
           </h1>
           <p className="text-sm sm:text-base text-zinc-400 max-w-3xl leading-relaxed">
-            Realiza las siguientes labores, ingresa tu cédula o código de cliente y el sistema sumará automáticamente una compra por sello a tu tarjeta digital. Al llegar a los 10 sellos reclamas tu <strong className="text-amber-400 font-bold">recompensa de Granizado de 12 onzas</strong> en caja.
+            Realiza las siguientes labores, ingresa tu cédula o código de cliente y el sistema sumará automáticamente una compra por sello a tu tarjeta digital. Al llegar a los 10 sellos reclamas tu <strong className="text-amber-400 font-bold">Granizado de 12 onzas GRATIS (válido en caja o a domicilio)</strong>.
           </p>
         </div>
 
@@ -514,7 +514,7 @@ export default function MisionesPage() {
                   Premio: +1 Sello Extra directo a tu Tarjeta
                 </strong>
                 <span className="text-zinc-400 text-xs">
-                  Acredita 1 compra a tu saldo de lealtad para avanzar en tu Tarjeta de Fidelidad.
+                  Acredita 1 compra a tu saldo de lealtad para avanzar hacia tu Granizado de 12oz GRATIS (en caja o a domicilio).
                 </span>
               </div>
             </div>
@@ -784,7 +784,7 @@ export default function MisionesPage() {
               ¿Listo para consultar tu progreso?
             </h4>
             <p className="text-xs sm:text-sm text-zinc-400 max-w-lg leading-relaxed">
-              Recuerda: <strong>Sello 5 = 15% Descuento</strong> y <strong>Sello 10 = Recompensa de Granizado de 12 onzas</strong>.
+              Recuerda: <strong>Sello 5 = 15% Descuento</strong> y <strong>Sello 10 = Granizado de 12 onzas GRATIS (en caja o a domicilio)</strong>.
             </p>
           </div>
 
@@ -829,7 +829,7 @@ export default function MisionesPage() {
                 Inicia Sesión para Acreditar tus Sellos
               </h3>
               <p className="text-xs sm:text-sm text-zinc-400 mt-2 leading-relaxed">
-                Para validar tus labores y registrar tus compras hacia tu <strong className="text-amber-400 font-bold">recompensa de Granizado de 12 onzas</strong>, debes acceder a tu cuenta.
+                Para validar tus labores y registrar tus compras hacia tu <strong className="text-amber-400 font-bold">Granizado de 12 onzas GRATIS (en caja o a domicilio)</strong>, debes acceder a tu cuenta.
               </p>
             </div>
 
