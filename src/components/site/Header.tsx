@@ -117,18 +117,6 @@ export default function Header() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 bg-background/95 backdrop-blur-md">
               <DropdownMenuItem asChild>
-                <Link href="/fidelidad" className="flex items-center gap-2 w-full cursor-pointer text-amber-400">
-                  <Award className="h-4 w-4" />
-                  <span className="font-semibold">Tarjeta Fidelidad</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link href="/misiones" className="flex items-center gap-2 w-full cursor-pointer text-amber-300">
-                  <Star className="h-4 w-4" />
-                  <span>Misiones & Premios</span>
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
                 <Link href="/galeria" className="flex items-center gap-2 w-full cursor-pointer">
                   <ImageIcon className="h-4 w-4" />
                   <span>Galería</span>

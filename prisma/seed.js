@@ -33,8 +33,40 @@ async function main() {
       await prisma.user.update({ where: { email: adminEmail }, data: { roleId: adminRole.id } });
     }
   }
+
+  // Sembrar o actualizar configuración oficial del sitio y redes sociales
+  const defaultSocial = {
+    siteName: "Q'hubo Mor",
+    description: "¡Síguenos en nuestras redes sociales!",
+    facebookUrl: "https://www.facebook.com/share/17TBCC1uvw/",
+    instagramUrl: "https://www.instagram.com/q.hubo_mor?igsh=MWUyMHZjM2V0MHd5eA==",
+    tiktokUrl: "https://www.tiktok.com/@q.hubo_mor?_r=1&_t=ZS-91oYc9Wq6gD",
+    whatsappUrl: "https://wa.me/573044430427",
+    websiteUrl: "https://qhubomor.com/",
+  };
+
+  const existingConfig = await prisma.siteConfig.findFirst();
+  if (!existingConfig) {
+    await prisma.siteConfig.create({ data: defaultSocial });
+  } else {
+    await prisma.siteConfig.update({
+      where: { id: existingConfig.id },
+      data: {
+        facebookUrl: existingConfig.facebookUrl || defaultSocial.facebookUrl,
+        instagramUrl: existingConfig.instagramUrl || defaultSocial.instagramUrl,
+        tiktokUrl: existingConfig.tiktokUrl || defaultSocial.tiktokUrl,
+        whatsappUrl: existingConfig.whatsappUrl || defaultSocial.whatsappUrl,
+        websiteUrl: existingConfig.websiteUrl || defaultSocial.websiteUrl,
+      },
+    });
+  }
 }
 
 main()
-  .catch((e) => { process.exit(1); })
-  .finally(async () => { await prisma.$disconnect(); });
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

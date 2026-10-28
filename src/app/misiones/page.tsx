@@ -49,6 +49,29 @@ export default function MisionesPage() {
   const [googleClaimed, setGoogleClaimed] = useState(false);
   const [socialClaimed, setSocialClaimed] = useState(false);
 
+  // Enlaces de redes sociales sincronizados con admin/settings
+  const [socialLinks, setSocialLinks] = useState({
+    instagramUrl: 'https://www.instagram.com/q.hubo_mor?igsh=MWUyMHZjM2V0MHd5eA==',
+    tiktokUrl: 'https://www.tiktok.com/@q.hubo_mor?_r=1&_t=ZS-91oYc9Wq6gD',
+    facebookUrl: 'https://www.facebook.com/share/17TBCC1uvw/',
+  });
+
+  // Cargar enlaces configurados desde la base de datos (admin/settings)
+  useEffect(() => {
+    fetch('/api/admin/site-config')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          setSocialLinks((prev) => ({
+            instagramUrl: data.instagramUrl || prev.instagramUrl,
+            tiktokUrl: data.tiktokUrl || prev.tiktokUrl,
+            facebookUrl: data.facebookUrl || prev.facebookUrl,
+          }));
+        }
+      })
+      .catch((err) => console.error('Error al cargar enlaces de redes:', err));
+  }, []);
+
   // Estados de carga durante envío al backend
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingSocial, setLoadingSocial] = useState(false);
@@ -613,11 +636,11 @@ export default function MisionesPage() {
               <div className="p-3.5 rounded-2xl bg-zinc-900/80 border border-zinc-800 flex items-center justify-between gap-2">
                 <div>
                   <h4 className="text-xs font-bold text-white">Instagram</h4>
-                  <p className="text-[11px] text-zinc-400 font-mono">@qhubomor</p>
+                  <p className="text-[11px] text-zinc-400 font-mono">@q.hubo_mor</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <a
-                    href={process.env.NEXT_PUBLIC_INSTAGRAM_URL || 'https://instagram.com'}
+                    href={socialLinks.instagramUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="py-1.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold flex items-center gap-1 transition-colors"
@@ -642,11 +665,11 @@ export default function MisionesPage() {
               <div className="p-3.5 rounded-2xl bg-zinc-900/80 border border-zinc-800 flex items-center justify-between gap-2">
                 <div>
                   <h4 className="text-xs font-bold text-white">TikTok</h4>
-                  <p className="text-[11px] text-zinc-400 font-mono">@qhubomor</p>
+                  <p className="text-[11px] text-zinc-400 font-mono">@q.hubo_mor</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <a
-                    href={process.env.NEXT_PUBLIC_TIKTOK_URL || 'https://tiktok.com'}
+                    href={socialLinks.tiktokUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="py-1.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold flex items-center gap-1 transition-colors"
@@ -671,11 +694,11 @@ export default function MisionesPage() {
               <div className="p-3.5 rounded-2xl bg-zinc-900/80 border border-zinc-800 flex items-center justify-between gap-2">
                 <div>
                   <h4 className="text-xs font-bold text-white">Facebook</h4>
-                  <p className="text-[11px] text-zinc-400">Qhubo Mor Oficial</p>
+                  <p className="text-[11px] text-zinc-400">Q&apos;hubo Mor Oficial</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <a
-                    href={process.env.NEXT_PUBLIC_FACEBOOK_URL || 'https://facebook.com'}
+                    href={socialLinks.facebookUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="py-1.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold flex items-center gap-1 transition-colors"
