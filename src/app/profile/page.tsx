@@ -9,12 +9,17 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { QRCodeCanvas } from "qrcode.react";
 import { signOut } from "next-auth/react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { toast } from "sonner";
+import { Trash2, AlertTriangle, RefreshCw } from "lucide-react";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function ProfilePage() {
   const { data, mutate } = useSWR("/api/profile/summary", fetcher);
   const [preview, setPreview] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const evtRef = useRef<EventSource | null>(null);
   useEffect(() => {
     evtRef.current?.close();
@@ -45,6 +50,33 @@ export default function ProfilePage() {
     mutate();
   };
 
+  const handleDeleteAccount = async () => {
+    try {
+      setDeleting(true);
+      const res = await fetch("/api/profile/delete-account", {
+        method: "POST",
+      });
+      const resData = await res.json();
+      if (!res.ok) {
+        throw new Error(resData.error || "No se pudo eliminar la cuenta");
+      }
+
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("qhubomor_fidelidad_id");
+        localStorage.removeItem("qhubomor_mision_google_done");
+        localStorage.removeItem("qhubomor_mision_social_done");
+      }
+
+      toast.success("Tu cuenta y sellos han sido eliminados correctamente.");
+      setShowDeleteModal(false);
+      await signOut({ callbackUrl: "/" });
+    } catch (err: any) {
+      toast.error(err.message || "Error al eliminar la cuenta");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-4 md:p-6 grid gap-6">
       <Card>
@@ -52,9 +84,16 @@ export default function ProfilePage() {
           <CardTitle>Perfil</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col md:flex-row items-center gap-6">
-          <div className="w-24 h-24 relative rounded-full overflow-hidden border shrink-0">
-            {data?.user?.image && <Image src={data.user.image} alt="avatar" fill className="object-cover" />}
-          </div>
+          <Avatar className="w-24 h-24 rounded-full border-2 border-amber-500/40 shadow-xl shadow-amber-500/10 shrink-0 text-3xl font-black bg-zinc-900 text-amber-400">
+            <AvatarImage
+              src={preview || data?.user?.image || undefined}
+              alt={data?.user?.name || "avatar"}
+              className="object-cover w-full h-full"
+            />
+            <AvatarFallback className="bg-amber-500/20 text-amber-400 font-extrabold text-3xl flex items-center justify-center w-full h-full">
+              {(data?.user?.name || "U")[0]?.toUpperCase() || "U"}
+            </AvatarFallback>
+          </Avatar>
           <div className="space-y-4 w-full text-center md:text-left">
             <div className="text-sm font-medium">
               <p className="text-lg font-bold">{data?.user?.name}</p>
@@ -214,6 +253,86 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Zona de Peligro: Eliminar Cuenta */}
+      <Card className="border-red-500/30 bg-red-950/10">
+        <CardHeader>
+          <CardTitle className="text-red-500 flex items-center gap-2 text-base">
+            <AlertTriangle className="w-5 h-5 text-red-500" />
+            <span>Zona de Peligro</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-white">Eliminar mi cuenta y sellos de fidelidad</p>
+              <p className="text-xs text-muted-foreground mt-1 max-w-xl">
+                Al eliminar tu cuenta se borrarán permanentemente tus sellos acumulados, tu tarjeta digital y tu perfil de cliente en el sistema del restaurante. Tus compras registradas se conservarán intactas para fines fiscales y contables. Esta acción no se puede deshacer.
+              </p>
+            </div>
+            <Button
+              variant="destructive"
+              onClick={() => setShowDeleteModal(true)}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold shrink-0 flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Eliminar Cuenta</span>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Modal de Confirmación para Eliminar Cuenta */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-zinc-950 border border-red-500/40 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl shadow-red-500/10">
+            <div className="flex items-center gap-3 text-red-500">
+              <div className="p-3 bg-red-500/10 rounded-xl border border-red-500/20">
+                <AlertTriangle className="w-6 h-6 text-red-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-white">¿Eliminar cuenta definitivamente?</h3>
+                <span className="text-xs text-red-400 font-medium">Esta acción no se puede deshacer</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-zinc-300 leading-relaxed">
+              Estás a punto de borrar tu cuenta de usuario, tus sellos acumulados y tu tarjeta digital de cliente en el sistema POS del restaurante.
+              <br /><br />
+              <strong className="text-amber-400">Nota de seguridad:</strong> El historial de ventas y compras del restaurante permanecerá seguro y contabilizado.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                className="border-zinc-700 text-zinc-300 hover:bg-zinc-900"
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteAccount}
+                disabled={deleting}
+                className="bg-red-600 hover:bg-red-700 font-bold flex items-center gap-2"
+              >
+                {deleting ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Eliminando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    <span>Sí, eliminar mi cuenta</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

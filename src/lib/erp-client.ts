@@ -29,6 +29,8 @@ export interface FidelidadClienteResponse {
   hito10: boolean;
   granizadoGratis: boolean;
   sellosRestantesParaGranizado: number;
+  misionGoogleCompletada?: boolean;
+  misionRedesCompletada?: boolean;
   ultimasVentas: VentaItemFidelidad[];
 }
 
@@ -122,6 +124,8 @@ export interface SincronizarUsuarioResponse {
     email?: string;
     contador: number;
     comprasTotales: number;
+    misionGoogleCompletada?: boolean;
+    misionRedesCompletada?: boolean;
     isNew?: boolean;
   };
   error?: string;
@@ -157,6 +161,40 @@ export async function sincronizarUsuarioCliente(
     return {
       success: false,
       error: err.message || 'Error de conexión con ERP',
+    };
+  }
+}
+
+export async function eliminarCuentaCliente(
+  email: string,
+  codigoCliente?: number
+): Promise<{ success: boolean; message?: string; error?: string }> {
+  try {
+    const res = await fetch(`${ERP_BASE_URL}/clientes/fidelidad/eliminar-cuenta`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, codigoCliente }),
+    });
+
+    const json = await res.json();
+    if (!res.ok) {
+      return {
+        success: false,
+        error: json?.message || json?.error || 'Error al eliminar cliente en ERP',
+      };
+    }
+
+    return {
+      success: true,
+      message: json?.message || 'Cuenta y sellos eliminados exitosamente del ERP',
+    };
+  } catch (err: any) {
+    console.error('Error al eliminar cuenta en ERP:', err);
+    return {
+      success: false,
+      error: err.message || 'Error de conexión con el servidor ERP',
     };
   }
 }

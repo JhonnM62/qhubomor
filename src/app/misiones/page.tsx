@@ -84,6 +84,38 @@ export default function MisionesPage() {
     }
   }, [status]);
 
+  // Consultar en la base de datos real del ERP el estado de las misiones para este cliente
+  const consultarEstadoMisionesBD = async (identificador: string | number) => {
+    const clean = String(identificador).trim().replace(/^#/, '');
+    if (!clean) return;
+
+    try {
+      const res = await fetch(`/api/fidelidad/consultar?identificador=${encodeURIComponent(clean)}&_t=${Date.now()}`, {
+        cache: 'no-store',
+      });
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const fidelidad = data?.data ?? data;
+      if (fidelidad) {
+        if (fidelidad.misionGoogleCompletada) {
+          setGoogleClaimed(true);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('qhubomor_mision_google_done', 'true');
+          }
+        }
+        if (fidelidad.misionRedesCompletada) {
+          setSocialClaimed(true);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('qhubomor_mision_social_done', 'true');
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error consultando estado de misiones en ERP:', e);
+    }
+  };
+
   // Si está logeado, sincronizar con el ERP para obtener el código único de cliente de máx 6 dígitos
   useEffect(() => {
     async function syncUsuario() {
@@ -99,6 +131,7 @@ export default function MisionesPage() {
           if (typeof window !== 'undefined') {
             localStorage.setItem('qhubomor_fidelidad_id', String(enSesion));
           }
+          consultarEstadoMisionesBD(enSesion);
           return;
         }
 
@@ -118,6 +151,15 @@ export default function MisionesPage() {
             if (typeof window !== 'undefined') {
               localStorage.setItem('qhubomor_fidelidad_id', String(data.cliente.IDcliente));
             }
+            if (data.cliente.misionGoogleCompletada) {
+              setGoogleClaimed(true);
+              if (typeof window !== 'undefined') localStorage.setItem('qhubomor_mision_google_done', 'true');
+            }
+            if (data.cliente.misionRedesCompletada) {
+              setSocialClaimed(true);
+              if (typeof window !== 'undefined') localStorage.setItem('qhubomor_mision_social_done', 'true');
+            }
+            consultarEstadoMisionesBD(data.cliente.IDcliente);
           }
         } catch (e) {
           console.error('Error sincronizando cliente en misiones:', e);
@@ -126,6 +168,31 @@ export default function MisionesPage() {
     }
     syncUsuario();
   }, [status, session, nombre]);
+
+  // Consultar en BD cuando cambie la cédula o código ingresado
+  useEffect(() => {
+    if (cedula && cedula.trim()) {
+      consultarEstadoMisionesBD(cedula.trim());
+    }
+  }, [cedula]);
+
+  // Listener para refrescar estado en vivo al volver a la pestaña o al navegar
+  useEffect(() => {
+    const handleRefresh = () => {
+      const activeId = codigoCliente || cedula || ((session as any)?.codigoCliente);
+      if (activeId) {
+        consultarEstadoMisionesBD(activeId);
+      }
+    };
+    window.addEventListener('focus', handleRefresh);
+    window.addEventListener('visibilitychange', handleRefresh);
+    window.addEventListener('fidelidad:actualizada', handleRefresh);
+    return () => {
+      window.removeEventListener('focus', handleRefresh);
+      window.removeEventListener('visibilitychange', handleRefresh);
+      window.removeEventListener('fidelidad:actualizada', handleRefresh);
+    };
+  }, [codigoCliente, cedula, session]);
 
   // Cargar cédula guardada previamente en el dispositivo
   useEffect(() => {
@@ -527,60 +594,72 @@ export default function MisionesPage() {
               <span className="text-xs text-zinc-400 ml-2 font-medium">Calificación 5/5 con tu opinión</span>
             </div>
 
-            {/* Botón para abrir Google Maps */}
-            <a
-              href={googleMapsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 active:scale-98"
-            >
-              <span>1. Abrir Google Maps para calificar</span>
-              <ExternalLink className="w-4 h-4" />
-            </a>
-
-            {/* Zona de subida de captura */}
-            <div className="pt-2 border-t border-zinc-800/80 space-y-2">
-              <label className="block text-xs font-bold text-zinc-300">
-                2. Sube la captura de tu reseña publicada
-              </label>
-
-              <div
-                onClick={() => {
-                  if (!isLoggedIn) {
-                    setShowAuthModal(true);
-                    toast.error('Inicia sesión con Google para subir tu captura.');
-                  }
-                }}
-                className="relative border-2 border-dashed border-zinc-700 hover:border-amber-500/60 rounded-2xl p-5 text-center transition-colors bg-zinc-950/70 cursor-pointer group"
-              >
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleFileChange(e, setGoogleScreenshot)}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                />
-
-                {googleScreenshot ? (
-                  <div className="flex flex-col items-center gap-1.5 text-emerald-400 font-bold text-xs">
-                    <CheckCircle2 className="w-6 h-6" />
-                    <span>Captura lista. Haz clic si deseas cambiarla.</span>
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center gap-1 text-zinc-400 group-hover:text-zinc-200 transition-colors">
-                    <Camera className="w-6 h-6 text-amber-400/80 mb-1" />
-                    <span className="text-xs font-semibold">Seleccionar o tomar captura de la reseña</span>
-                    <span className="text-[10px] text-zinc-500">JPG, PNG o WebP</span>
-                  </div>
-                )}
+            {googleClaimed ? (
+              <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2">
+                <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
+                <h4 className="text-base font-extrabold text-white">¡Misión de Google Maps Completada!</h4>
+                <p className="text-xs text-zinc-300">
+                  Ya has acreditado tu sello por tu reseña 5 estrellas en Google Maps. ¡Gracias por tu calificación!
+                </p>
               </div>
+            ) : (
+              <>
+                {/* Botón para abrir Google Maps */}
+                <a
+                  href={googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-md shadow-amber-500/20 active:scale-98"
+                >
+                  <span>1. Abrir Google Maps para calificar</span>
+                  <ExternalLink className="w-4 h-4" />
+                </a>
 
-              <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-[11px] text-zinc-400 flex items-start gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                <span>
-                  <strong className="text-zinc-300">Auditoría con IA:</strong> Se verificará automáticamente con Gemini Vision que tu reseña contenga 5 estrellas y sea reciente.
-                </span>
-              </div>
-            </div>
+                {/* Zona de subida de captura */}
+                <div className="pt-2 border-t border-zinc-800/80 space-y-2">
+                  <label className="block text-xs font-bold text-zinc-300">
+                    2. Sube la captura de tu reseña publicada
+                  </label>
+
+                  <div
+                    onClick={() => {
+                      if (!isLoggedIn) {
+                        setShowAuthModal(true);
+                        toast.error('Inicia sesión con Google para subir tu captura.');
+                      }
+                    }}
+                    className="relative border-2 border-dashed border-zinc-700 hover:border-amber-500/60 rounded-2xl p-5 text-center transition-colors bg-zinc-950/70 cursor-pointer group"
+                  >
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange(e, setGoogleScreenshot)}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+
+                    {googleScreenshot ? (
+                      <div className="flex flex-col items-center gap-1.5 text-emerald-400 font-bold text-xs">
+                        <CheckCircle2 className="w-6 h-6" />
+                        <span>Captura lista. Haz clic si deseas cambiarla.</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1 text-zinc-400 group-hover:text-zinc-200 transition-colors">
+                        <Camera className="w-6 h-6 text-amber-400/80 mb-1" />
+                        <span className="text-xs font-semibold">Seleccionar o tomar captura de la reseña</span>
+                        <span className="text-[10px] text-zinc-500">JPG, PNG o WebP</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-[11px] text-zinc-400 flex items-start gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                    <span>
+                      <strong className="text-zinc-300">Auditoría con IA:</strong> Se verificará automáticamente con Gemini Vision que tu reseña contenga 5 estrellas y sea reciente.
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Botón de Acreditación */}
             <button
@@ -651,102 +730,114 @@ export default function MisionesPage() {
               </div>
             </div>
 
-            {/* Perfiles de Redes Sociales */}
-            <div className="space-y-3 pt-1">
-              {/* Instagram */}
-              <div className="p-3.5 rounded-2xl bg-zinc-900/80 border border-zinc-800 flex items-center justify-between gap-2">
-                <div>
-                  <h4 className="text-xs font-bold text-white">Instagram</h4>
-                  <p className="text-[11px] text-zinc-400 font-mono">@q.hubo_mor</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <a
-                    href={socialLinks.instagramUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="py-1.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold flex items-center gap-1 transition-colors"
-                  >
-                    <span>Seguir</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                  <label className="relative py-1.5 px-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors border border-amber-500/30">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileChange(e, setIgScreenshot)}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <Camera className="w-3 h-3" />
-                    <span>{igScreenshot ? '✓ Lista' : 'Captura'}</span>
-                  </label>
-                </div>
+            {socialClaimed ? (
+              <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-2">
+                <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto" />
+                <h4 className="text-base font-extrabold text-white">¡Misión de Redes Sociales Completada!</h4>
+                <p className="text-xs text-zinc-300">
+                  Ya has acreditado tu sello por seguir nuestras cuentas oficiales. ¡Gracias por apoyarnos!
+                </p>
               </div>
+            ) : (
+              <>
+                {/* Perfiles de Redes Sociales */}
+                <div className="space-y-3 pt-1">
+                  {/* Instagram */}
+                  <div className="p-3.5 rounded-2xl bg-zinc-900/80 border border-zinc-800 flex items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-xs font-bold text-white">Instagram</h4>
+                      <p className="text-[11px] text-zinc-400 font-mono">@q.hubo_mor</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={socialLinks.instagramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="py-1.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold flex items-center gap-1 transition-colors"
+                      >
+                        <span>Seguir</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                      <label className="relative py-1.5 px-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors border border-amber-500/30">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, setIgScreenshot)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <Camera className="w-3 h-3" />
+                        <span>{igScreenshot ? '✓ Lista' : 'Captura'}</span>
+                      </label>
+                    </div>
+                  </div>
 
-              {/* TikTok */}
-              <div className="p-3.5 rounded-2xl bg-zinc-900/80 border border-zinc-800 flex items-center justify-between gap-2">
-                <div>
-                  <h4 className="text-xs font-bold text-white">TikTok</h4>
-                  <p className="text-[11px] text-zinc-400 font-mono">@q.hubo_mor</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <a
-                    href={socialLinks.tiktokUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="py-1.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold flex items-center gap-1 transition-colors"
-                  >
-                    <span>Seguir</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                  <label className="relative py-1.5 px-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors border border-amber-500/30">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileChange(e, setTiktokScreenshot)}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <Camera className="w-3 h-3" />
-                    <span>{tiktokScreenshot ? '✓ Lista' : 'Captura'}</span>
-                  </label>
-                </div>
-              </div>
+                  {/* TikTok */}
+                  <div className="p-3.5 rounded-2xl bg-zinc-900/80 border border-zinc-800 flex items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-xs font-bold text-white">TikTok</h4>
+                      <p className="text-[11px] text-zinc-400 font-mono">@q.hubo_mor</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={socialLinks.tiktokUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="py-1.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold flex items-center gap-1 transition-colors"
+                      >
+                        <span>Seguir</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                      <label className="relative py-1.5 px-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors border border-amber-500/30">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, setTiktokScreenshot)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <Camera className="w-3 h-3" />
+                        <span>{tiktokScreenshot ? '✓ Lista' : 'Captura'}</span>
+                      </label>
+                    </div>
+                  </div>
 
-              {/* Facebook */}
-              <div className="p-3.5 rounded-2xl bg-zinc-900/80 border border-zinc-800 flex items-center justify-between gap-2">
-                <div>
-                  <h4 className="text-xs font-bold text-white">Facebook</h4>
-                  <p className="text-[11px] text-zinc-400">Q&apos;hubo Mor Oficial</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <a
-                    href={socialLinks.facebookUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="py-1.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold flex items-center gap-1 transition-colors"
-                  >
-                    <span>Seguir</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                  <label className="relative py-1.5 px-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors border border-amber-500/30">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileChange(e, setFbScreenshot)}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                    <Camera className="w-3 h-3" />
-                    <span>{fbScreenshot ? '✓ Lista' : 'Captura'}</span>
-                  </label>
-                </div>
-              </div>
+                  {/* Facebook */}
+                  <div className="p-3.5 rounded-2xl bg-zinc-900/80 border border-zinc-800 flex items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-xs font-bold text-white">Facebook</h4>
+                      <p className="text-[11px] text-zinc-400">Q&apos;hubo Mor Oficial</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={socialLinks.facebookUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="py-1.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-semibold flex items-center gap-1 transition-colors"
+                      >
+                        <span>Seguir</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                      <label className="relative py-1.5 px-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors border border-amber-500/30">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => handleFileChange(e, setFbScreenshot)}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <Camera className="w-3 h-3" />
+                        <span>{fbScreenshot ? '✓ Lista' : 'Captura'}</span>
+                      </label>
+                    </div>
+                  </div>
 
-              <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-[11px] text-zinc-400 flex items-start gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                <span>
-                  <strong className="text-zinc-300">Auditoría con IA:</strong> Se verificará con Gemini Vision que sigas a <strong className="text-amber-400">@q.hubo_mor</strong> (botón &ldquo;Siguiendo&rdquo; o &ldquo;Following&rdquo;) y que la captura sea reciente.
-                </span>
-              </div>
-            </div>
+                  <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800 text-[11px] text-zinc-400 flex items-start gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+                    <span>
+                      <strong className="text-zinc-300">Auditoría con IA:</strong> Se verificará con Gemini Vision que sigas a <strong className="text-amber-400">@q.hubo_mor</strong> (botón &ldquo;Siguiendo&rdquo; o &ldquo;Following&rdquo;) y que la captura sea reciente.
+                    </span>
+                  </div>
+                </div>
+              </>
+            )}
 
             {/* Botón de Acreditación */}
             <button
