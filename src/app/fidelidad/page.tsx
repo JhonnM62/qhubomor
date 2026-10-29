@@ -293,20 +293,20 @@ function FidelidadContent() {
                   </span>
                 </div>
 
-                {/* Caja de Código Oficial */}
+                {/* Caja de Código Oficial o Cédula */}
                 <div className="p-3.5 sm:p-4 rounded-2xl bg-zinc-900/90 border border-zinc-800 text-center">
                   <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 block">
-                    Tu Código POS
+                    {cliente?.cedula ? 'Tu Cédula / POS' : 'Tu Código POS'}
                   </span>
                   <span className="text-xl sm:text-2xl font-black text-white font-mono block mt-1">
-                    #{codigoGenerado || cliente?.IDcliente || '---'}
+                    {cliente?.cedula || `#${codigoGenerado || cliente?.IDcliente || '---'}`}
                   </span>
                   <button
                     onClick={handleCopyCode}
                     className="mt-1 text-[10px] text-amber-400 hover:text-amber-300 font-bold flex items-center justify-center gap-1 mx-auto"
                   >
                     {copiedCode ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                    <span>{copiedCode ? '¡Copiado!' : 'Copiar código'}</span>
+                    <span>{copiedCode ? '¡Copiado!' : (cliente?.cedula ? 'Copiar cédula' : 'Copiar código')}</span>
                   </button>
                 </div>
 
@@ -342,6 +342,7 @@ function FidelidadContent() {
                   <DigitalLoyaltyCard
                     cliente={cliente}
                     isRealtimeConnected={isConnected}
+                    onCedulaActualizada={() => activeIdentificador && fetchCliente(activeIdentificador)}
                   />
 
                   {/* Acceso directo a Misiones para sumar sellos extra */}

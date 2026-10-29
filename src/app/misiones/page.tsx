@@ -147,7 +147,7 @@ export default function MisionesPage() {
           const data = await res.json();
           if (data.success && data.cliente?.IDcliente) {
             setCodigoCliente(data.cliente.IDcliente);
-            setCedula(String(data.cliente.IDcliente));
+            setCedula(data.cliente.cedula ? String(data.cliente.cedula) : String(data.cliente.IDcliente));
             if (typeof window !== 'undefined') {
               localStorage.setItem('qhubomor_fidelidad_id', String(data.cliente.IDcliente));
             }
@@ -459,10 +459,14 @@ export default function MisionesPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
               <div className="p-3.5 rounded-2xl bg-zinc-900 border border-amber-500/30">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400 block">
-                  Tu Código de Cliente Oficial (POS)
+                  {cedula && codigoCliente && cedula !== String(codigoCliente)
+                    ? 'Tu Cédula / Código POS'
+                    : 'Tu Código de Cliente Oficial (POS)'}
                 </span>
                 <span className="text-xl sm:text-2xl font-black font-mono text-amber-400 block mt-0.5">
-                  #{codigoCliente || cedula || 'Sincronizando...'}
+                  {cedula && codigoCliente && cedula !== String(codigoCliente)
+                    ? cedula
+                    : `#${codigoCliente || cedula || 'Sincronizando...'}`}
                 </span>
                 <span className="text-[10px] text-emerald-400 flex items-center gap-1 mt-1 font-medium">
                   <CheckCircle2 className="w-3 h-3" />

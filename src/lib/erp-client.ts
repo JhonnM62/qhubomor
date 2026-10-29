@@ -22,6 +22,7 @@ export interface FidelidadClienteResponse {
   IDcliente: number;
   nombre: string;
   cedula: string | null;
+  cedulaBloqueada?: boolean;
   whatsapp: string | null;
   contador: number;
   comprasTotales: number;
@@ -192,6 +193,41 @@ export async function eliminarCuentaCliente(
     };
   } catch (err: any) {
     console.error('Error al eliminar cuenta en ERP:', err);
+    return {
+      success: false,
+      error: err.message || 'Error de conexión con el servidor ERP',
+    };
+  }
+}
+
+export async function actualizarCedulaCliente(
+  identificador: string,
+  cedula: string
+): Promise<{ success: boolean; message?: string; error?: string; cedula?: string }> {
+  try {
+    const res = await fetch(`${ERP_BASE_URL}/clientes/fidelidad/actualizar-cedula`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ identificador, cedula }),
+    });
+
+    const json = await res.json();
+    if (!res.ok) {
+      return {
+        success: false,
+        error: json?.message || json?.error || 'Error al actualizar cédula en el ERP',
+      };
+    }
+
+    return {
+      success: true,
+      message: json?.message || 'Cédula vinculada exitosamente',
+      cedula: json?.cedula,
+    };
+  } catch (err: any) {
+    console.error('Error al actualizar cédula en ERP:', err);
     return {
       success: false,
       error: err.message || 'Error de conexión con el servidor ERP',

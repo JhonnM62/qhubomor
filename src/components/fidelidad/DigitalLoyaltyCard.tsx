@@ -14,18 +14,30 @@ import {
   Copy,
   Check,
   Bike,
+  Pencil,
+  Lock,
+  AlertTriangle,
+  Loader2,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface DigitalLoyaltyCardProps {
   cliente: FidelidadClienteResponse;
   isRealtimeConnected?: boolean;
+  onCedulaActualizada?: () => void;
 }
 
 export function DigitalLoyaltyCard({
   cliente,
   isRealtimeConnected = false,
+  onCedulaActualizada,
 }: DigitalLoyaltyCardProps) {
   const [showQrModal, setShowQrModal] = useState(false);
+  const [showCedulaModal, setShowCedulaModal] = useState(false);
+  const [cedulaInput, setCedulaInput] = useState('');
+  const [confirmStep, setConfirmStep] = useState(false);
+  const [savingCedula, setSavingCedula] = useState(false);
+  const [cedulaError, setCedulaError] = useState('');
   const [copied, setCopied] = useState(false);
 
   const qrData = JSON.stringify({
@@ -45,6 +57,39 @@ export function DigitalLoyaltyCard({
     navigator.clipboard.writeText(String(cliente.cedula || cliente.IDcliente));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleGuardarCedula = async () => {
+    const clean = cedulaInput.trim().replace(/\D/g, '');
+    if (!clean || clean.length < 5 || clean.length > 15) {
+      setCedulaError('Ingresa un número de cédula válido (entre 5 y 15 dígitos numéricos).');
+      setConfirmStep(false);
+      return;
+    }
+
+    setSavingCedula(true);
+    setCedulaError('');
+    try {
+      const res = await fetch('/api/fidelidad/actualizar-cedula', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cedula: clean }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'No se pudo vincular la cédula');
+      }
+
+      toast.success('¡Cédula vinculada exitosamente a tu tarjeta!');
+      setShowCedulaModal(false);
+      setConfirmStep(false);
+      onCedulaActualizada?.();
+    } catch (err: any) {
+      setCedulaError(err.message || 'Error al guardar la cédula');
+      setConfirmStep(false);
+    } finally {
+      setSavingCedula(false);
+    }
   };
 
   return (
@@ -84,13 +129,36 @@ export function DigitalLoyaltyCard({
 
         {/* Datos identificadores (Cédula, WhatsApp, Código Caja, Compras) */}
         <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mb-5 p-3 sm:p-4 rounded-2xl bg-zinc-950/70 border border-zinc-800/80">
-          <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/40">
-            <span className="text-[10px] uppercase tracking-wider font-bold text-zinc-500 block">
-              Cédula
-            </span>
-            <span className="text-xs sm:text-sm font-mono font-bold text-zinc-200 truncate block mt-0.5">
-              {cliente.cedula || 'No registrada'}
-            </span>
+          <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/40 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-zinc-500 block">
+                  Cédula
+                </span>
+                {cliente.cedulaBloqueada ? (
+                  <span title="Cédula verificada y vinculada (permanente)" className="text-[9px] text-emerald-400 font-semibold flex items-center gap-0.5">
+                    <Lock className="w-2.5 h-2.5" />
+                  </span>
+                ) : null}
+              </div>
+              <span className="text-xs sm:text-sm font-mono font-bold text-zinc-200 truncate block mt-0.5">
+                {cliente.cedula || 'No registrada'}
+              </span>
+            </div>
+            {!cliente.cedulaBloqueada && (
+              <button
+                onClick={() => {
+                  setCedulaInput(cliente.cedula || '');
+                  setCedulaError('');
+                  setConfirmStep(false);
+                  setShowCedulaModal(true);
+                }}
+                className="mt-1 text-[10px] text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1 self-start"
+              >
+                <Pencil className="w-2.5 h-2.5" />
+                <span>{cliente.cedula ? 'Modificar' : 'Vincular'}</span>
+              </button>
+            )}
           </div>
           <div className="p-2.5 rounded-xl bg-zinc-900/60 border border-zinc-800/40 text-right sm:text-left">
             <span className="text-[10px] uppercase tracking-wider font-bold text-zinc-500 block">
@@ -246,6 +314,139 @@ export function DigitalLoyaltyCard({
             >
               Cerrar
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal para Vincular / Editar Cédula con Reconfirmación Estricta */}
+      {showCedulaModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl p-6 bg-zinc-950 border border-amber-500/30 shadow-2xl text-left space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-bold text-white">
+                  {confirmStep ? 'Confirmar Cédula' : 'Vincular Número de Cédula'}
+                </h3>
+                <p className="text-xs text-zinc-400">
+                  {confirmStep
+                    ? 'Por favor verifica detenidamente antes de guardar.'
+                    : 'Usa tu documento de identidad para identificarte en caja y domicilios.'}
+                </p>
+              </div>
+            </div>
+
+            {cedulaError && (
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{cedulaError}</span>
+              </div>
+            )}
+
+            {!confirmStep ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
+                    Número de Cédula
+                  </label>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    placeholder="Ej: 1020304050"
+                    value={cedulaInput}
+                    onChange={(e) => {
+                      setCedulaInput(e.target.value.replace(/\D/g, ''));
+                      setCedulaError('');
+                    }}
+                    maxLength={15}
+                    className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white font-mono text-base focus:outline-none focus:border-amber-500"
+                  />
+                  <p className="text-[11px] text-zinc-500 mt-1.5">
+                    Solo dígitos numéricos (entre 5 y 15 números).
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-xs text-zinc-400 leading-relaxed">
+                  💡 <strong className="text-zinc-200">¿Para qué sirve?</strong> Al vincular tu cédula, no tendrás que recordar tu código de 6 dígitos (#{cliente.IDcliente}). Podrás dictar directamente tu cédula en caja o por WhatsApp.
+                </div>
+
+                <div className="flex gap-2.5 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCedulaModal(false);
+                      setCedulaError('');
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-medium text-xs transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const clean = cedulaInput.trim().replace(/\D/g, '');
+                      if (!clean || clean.length < 5 || clean.length > 15) {
+                        setCedulaError('Ingresa un número de cédula válido (mínimo 5 dígitos).');
+                        return;
+                      }
+                      setConfirmStep(true);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs transition-colors shadow-lg shadow-amber-500/20"
+                  >
+                    Continuar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Alerta de confirmación estricta (Regla 4) */}
+                <div className="p-4 rounded-2xl bg-amber-500/10 border-2 border-amber-500/50 space-y-2.5">
+                  <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <span>Confirmación Requerida</span>
+                  </div>
+                  <p className="text-xs text-zinc-300 leading-relaxed">
+                    ¿Confirmas que tu número de cédula es:
+                  </p>
+                  <div className="py-2 px-3 rounded-xl bg-zinc-900/90 border border-amber-500/40 text-center">
+                    <span className="text-xl font-mono font-black text-amber-400 tracking-wider">
+                      {cedulaInput}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-amber-300/90 leading-relaxed">
+                    ⚠️ <strong>Atención:</strong> Por motivos de seguridad y fidelización, <strong>este dato solo se puede vincular una única vez</strong>. Verifica que esté 100% correcto porque ya no se podrá volver a modificar desde la web.
+                  </p>
+                </div>
+
+                <div className="flex gap-2.5 pt-2">
+                  <button
+                    type="button"
+                    disabled={savingCedula}
+                    onClick={() => setConfirmStep(false)}
+                    className="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-medium text-xs transition-colors"
+                  >
+                    Corregir número
+                  </button>
+                  <button
+                    type="button"
+                    disabled={savingCedula}
+                    onClick={handleGuardarCedula}
+                    className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs transition-colors shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-1.5"
+                  >
+                    {savingCedula ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Guardando...</span>
+                      </>
+                    ) : (
+                      <span>Sí, confirmar y vincular</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
