@@ -34,7 +34,11 @@ export async function PUT(
       return new NextResponse("Not Found", { status: 404 });
     }
 
-    if (existingReview.userId !== (session as any).userId) {
+    const userRole = (session as any).role;
+    const userEmail = session.user?.email;
+    const isAdmin = userRole === "ADMIN" || (process.env.ADMIN_EMAIL && userEmail === process.env.ADMIN_EMAIL);
+
+    if (existingReview.userId !== (session as any).userId && !isAdmin) {
       return new NextResponse("Forbidden", { status: 403 });
     }
 
@@ -89,7 +93,11 @@ export async function DELETE(
       return new NextResponse("Not Found", { status: 404 });
     }
 
-    if (existingReview.userId !== (session as any).userId) {
+    const userRole = (session as any).role;
+    const userEmail = session.user?.email;
+    const isAdmin = userRole === "ADMIN" || (process.env.ADMIN_EMAIL && userEmail === process.env.ADMIN_EMAIL);
+
+    if (existingReview.userId !== (session as any).userId && !isAdmin) {
       return new NextResponse("Forbidden", { status: 403 });
     }
 

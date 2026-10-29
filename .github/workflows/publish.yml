@@ -112,12 +112,16 @@ jobs:
             docker rm -f $TEMP_CONTAINER 2>/dev/null || true
             docker create --name $TEMP_CONTAINER $IMAGE_URL
             
-            # Copiar cartas e imagenesproductos al host
-            docker cp $TEMP_CONTAINER:/app/public/uploads/. ${PROJECT_DIR}/uploads/ 2>/dev/null || true
+            # Sincronizar catálogo inicial sin sobreescribir archivos del usuario
+            mkdir -p /tmp/sync_uploads
+            docker cp $TEMP_CONTAINER:/app/public/uploads/. /tmp/sync_uploads/ 2>/dev/null || true
+            cp -rn /tmp/sync_uploads/* ${PROJECT_DIR}/uploads/ 2>/dev/null || true
+            rm -rf /tmp/sync_uploads
             
             # Si no existe la base de datos en el host, inicializarla desde la imagen
             if [ ! -f "${PROJECT_DIR}/data/data.sqlite" ]; then
                 echo "Inicializando base de datos SQLite en el host..."
+                docker cp $TEMP_CONTAINER:/app/prisma/data/data.sqlite ${PROJECT_DIR}/data/data.sqlite 2>/dev/null || \
                 docker cp $TEMP_CONTAINER:/app/prisma/data.sqlite ${PROJECT_DIR}/data/data.sqlite 2>/dev/null || true
             fi
             
@@ -142,6 +146,7 @@ jobs:
               --restart always \
               --env-file ${PROJECT_DIR}/.env \
               -v ${PROJECT_DIR}/data:/app/prisma/data \
+              -v ${PROJECT_DIR}/data:/app/data \
               -v ${PROJECT_DIR}/uploads:/app/public/uploads \
               $IMAGE_URL
               

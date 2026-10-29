@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 // Define types locally to match API response
 interface ReviewUser {
   name: string | null
+  email?: string | null
   image: string | null
 }
 
@@ -105,16 +106,18 @@ export function ReviewList() {
                     {review.content}
                   </p>
 
-                  {session?.user && (session as any).userId === review.userId && (
+                  {session?.user && ((session as any).userId === review.userId || (session as any).role === "ADMIN") && (
                     <div className="flex gap-2 justify-end border-t pt-4 mt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setEditingId(review.id)}
-                      >
-                        <Pencil className="w-3 h-3 mr-2" />
-                        Editar
-                      </Button>
+                      {(session as any).userId === review.userId && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setEditingId(review.id)}
+                        >
+                          <Pencil className="w-3 h-3 mr-2" />
+                          Editar
+                        </Button>
+                      )}
                       <Button
                         variant="destructive"
                         size="sm"

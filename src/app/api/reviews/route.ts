@@ -77,7 +77,7 @@ export async function GET(req: Request) {
       },
       include: {
         user: {
-          select: { name: true, image: true },
+          select: { name: true, email: true, image: true },
         },
       },
       orderBy: {
