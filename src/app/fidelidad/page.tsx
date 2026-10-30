@@ -66,18 +66,16 @@ function FidelidadContent() {
   useEffect(() => {
     async function syncClienteConErp() {
       if (status === 'authenticated' && session?.user?.email) {
-        const codigoEnSesion = (session as any).codigoCliente;
-        if (codigoEnSesion) {
-          setCodigoGenerado(Number(codigoEnSesion));
-          setActiveIdentificador(String(codigoEnSesion));
-          setIdentificadorInput(String(codigoEnSesion));
-          if (typeof window !== 'undefined') {
-            localStorage.setItem('qhubomor_fidelidad_id', String(codigoEnSesion));
-          }
-          return;
+        // Inicializar de inmediato con localStorage o sesión para evitar parpadeo
+        const savedId = typeof window !== 'undefined' ? localStorage.getItem('qhubomor_fidelidad_id') : null;
+        const initialId = savedId || (session as any).codigoCliente;
+        if (initialId) {
+          setCodigoGenerado(Number(initialId));
+          setActiveIdentificador(String(initialId));
+          setIdentificadorInput(String(initialId));
         }
 
-        // Si no vino en la sesión aún, sincronizarlo vía API para obtener/generar código de 6 dígitos
+        // Siempre consultar al ERP para obtener el código POS oficial y activo (en caso de fusión)
         try {
           const res = await fetch('/api/fidelidad/sincronizar-usuario', {
             method: 'POST',
@@ -314,7 +312,7 @@ function FidelidadContent() {
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        let msg = 'No se ha encontrado en la base de datos ninguna cuenta con ese número de WhatsApp o identificación. Revisa tu número de WhatsApp o identificación.';
+        let msg = 'Error al vincular tu identificación. Revisa los datos e intenta de nuevo.';
         if (typeof data.error === 'string') {
           msg = data.error;
         } else if (typeof data.message === 'string') {
@@ -325,11 +323,32 @@ function FidelidadContent() {
         throw new Error(msg);
       }
 
-      toast.success(
-        data.merged
-          ? '¡Pedidos anteriores y sellos acumulados recuperados con éxito!'
-          : '¡Identificador vinculado exitosamente!'
-      );
+      // Si fue encontrado en la base de datos previa del ERP -> Cambiar el código POS asignado
+      if (data.encontrado || data.merged) {
+        const nuevoId = data.cliente?.IDcliente;
+        if (nuevoId) {
+          setCodigoGenerado(Number(nuevoId));
+          setActiveIdentificador(String(nuevoId));
+          setIdentificadorInput(String(nuevoId));
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('qhubomor_fidelidad_id', String(nuevoId));
+          }
+          fetchCliente(String(nuevoId));
+        }
+        toast.success(
+          data.message || `¡Cuenta encontrada! Tu código POS asignado se actualizó a #${nuevoId} con todos tus sellos y compras acumuladas.`
+        );
+      } else {
+        // Si no se encontró en la base de datos -> Alerta informativa de que no se encontró y que se registró el número/identificación
+        const idActual = data.cliente?.IDcliente || codigoGenerado || cliente?.IDcliente;
+        if (idActual) {
+          fetchCliente(String(idActual));
+        }
+        toast.info(
+          data.message || 'No se encontraron compras anteriores con ese número, pero tu identificación ha sido vinculada con éxito a tu cuenta.',
+          { duration: 7000 }
+        );
+      }
 
       if (typeof window !== 'undefined') {
         const userEmail = (session?.user?.email || '').toLowerCase().trim();
@@ -344,19 +363,10 @@ function FidelidadContent() {
       }
 
       setShowBienvenida(false);
-
-      if (data.cliente?.IDcliente) {
-        const nuevoId = String(data.cliente.IDcliente);
-        setActiveIdentificador(nuevoId);
-        setCodigoGenerado(data.cliente.IDcliente);
-        fetchCliente(nuevoId);
-      } else if (activeIdentificador) {
-        fetchCliente(activeIdentificador);
-      }
     } catch (err: any) {
       const msg = typeof err?.message === 'string'
         ? err.message
-        : 'No se ha encontrado en la base de datos ninguna cuenta con ese número de WhatsApp o identificación. Revisa tu número de WhatsApp o identificación.';
+        : 'Error al vincular identificador. Revisa tu número de WhatsApp o identificación.';
       setOnboardingError(msg);
     } finally {
       setOnboardingSaving(false);
@@ -489,7 +499,19 @@ function FidelidadContent() {
                   <DigitalLoyaltyCard
                     cliente={cliente}
                     isRealtimeConnected={isConnected}
-                    onCedulaActualizada={() => activeIdentificador && fetchCliente(activeIdentificador)}
+                    onCedulaActualizada={(nuevoId?: number) => {
+                      if (nuevoId) {
+                        setCodigoGenerado(nuevoId);
+                        setActiveIdentificador(String(nuevoId));
+                        setIdentificadorInput(String(nuevoId));
+                        if (typeof window !== 'undefined') {
+                          localStorage.setItem('qhubomor_fidelidad_id', String(nuevoId));
+                        }
+                        fetchCliente(String(nuevoId));
+                      } else if (activeIdentificador) {
+                        fetchCliente(activeIdentificador);
+                      }
+                    }}
                   />
 
                   {/* Acceso directo a Misiones para sumar sellos extra */}

@@ -48,9 +48,10 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
+      encontrado: resErp.encontrado ?? resErp.merged ?? false,
+      merged: resErp.merged ?? false,
       message: resErp.message || 'Identificador vinculado exitosamente.',
       cliente: resErp.cliente,
-      merged: resErp.merged,
     });
   } catch (error: any) {
     console.error('Error en /api/fidelidad/vincular-identificador:', error);

@@ -28,7 +28,7 @@ import { toast } from 'sonner';
 interface DigitalLoyaltyCardProps {
   cliente: FidelidadClienteResponse;
   isRealtimeConnected?: boolean;
-  onCedulaActualizada?: () => void;
+  onCedulaActualizada?: (nuevoId?: number) => void;
 }
 
 export function DigitalLoyaltyCard({
@@ -103,13 +103,18 @@ export function DigitalLoyaltyCard({
         throw new Error(msg);
       }
 
-      toast.success(
-        data.merged
-          ? '¡Pedidos anteriores y sellos unificados exitosamente!'
-          : '¡Identificador vinculado con éxito a tu tarjeta!'
-      );
+      if (data.encontrado || data.merged) {
+        toast.success(
+          data.message || '¡Cuenta y pedidos anteriores unificados exitosamente!'
+        );
+      } else {
+        toast.info(
+          data.message || 'No se encontraron compras anteriores con ese número, pero tu identificación ha sido vinculada con éxito a tu cuenta.',
+          { duration: 6000 }
+        );
+      }
       setShowVincularModal(false);
-      onCedulaActualizada?.();
+      onCedulaActualizada?.(data.cliente?.IDcliente);
     } catch (err: any) {
       const msg = typeof err?.message === 'string'
         ? err.message

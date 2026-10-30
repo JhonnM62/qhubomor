@@ -247,6 +247,7 @@ export interface VincularIdentificadorResponse {
   error?: string;
   cliente?: any;
   merged?: boolean;
+  encontrado?: boolean;
 }
 
 export async function vincularIdentificadorCliente(
@@ -283,6 +284,7 @@ export async function vincularIdentificadorCliente(
       message: data?.message || 'Identificador vinculado exitosamente',
       cliente: data?.cliente ?? data,
       merged: data?.merged,
+      encontrado: data?.encontrado,
     };
   } catch (err: any) {
     console.error('Error al vincular identificador en ERP:', err);
