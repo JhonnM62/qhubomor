@@ -106,27 +106,63 @@ function FidelidadContent() {
     syncClienteConErp();
   }, [status, session]);
 
-  // 2. Activar modal de bienvenida / unificación si el query param es ?bienvenida=true o cliente sin identificación
+  // 2. Activar modal de bienvenida / unificación con Reglas de Filtrado Inteligente
   useEffect(() => {
-    if (searchParams?.get('bienvenida') === 'true') {
-      setShowBienvenida(true);
+    if (typeof window === 'undefined' || status === 'loading') return;
+
+    // Limpieza inmediata del query param para no re-disparar en recargas o historial
+    if (searchParams?.get('bienvenida')) {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('bienvenida');
+        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+      } catch {}
+    }
+
+    // Regla 1: Solo aplica para usuarios autenticados
+    if (status !== 'authenticated') {
+      setShowBienvenida(false);
       return;
     }
 
-    // Si ya cargó el cliente y no tiene WhatsApp ni Cédula vinculados, preguntar una vez si tiene pedidos previos
-    if (
-      status === 'authenticated' &&
-      cliente &&
-      !cliente.whatsapp &&
-      !cliente.cedula &&
-      typeof window !== 'undefined'
-    ) {
-      const yaPreguntado = localStorage.getItem('qhubomor_onboarding_dismissed');
-      if (!yaPreguntado) {
-        setShowBienvenida(true);
-      }
+    // Regla 2: Esperar a que el cliente termine de cargar para evaluar su perfil real
+    if (!cliente) {
+      return;
     }
-  }, [searchParams, status, cliente]);
+
+    // Regla 3: Si el cliente ya tiene WhatsApp o Cédula vinculados, NUNCA mostrarlo
+    const tieneWhatsapp = Boolean(cliente.whatsapp && cliente.whatsapp.trim().length >= 7);
+    const tieneCedula = Boolean(cliente.cedula && String(cliente.cedula).trim().length >= 5);
+    if (tieneWhatsapp || tieneCedula) {
+      setShowBienvenida(false);
+      return;
+    }
+
+    // Regla 4: Si el cliente ya tiene compras, sellos o historial registrado, NUNCA mostrarlo
+    const contador = Number(cliente.contador || 0);
+    const compras = Number(cliente.comprasTotales || 0);
+    const tieneVentas = Array.isArray(cliente.ultimasVentas) && cliente.ultimasVentas.length > 0;
+    if (contador > 0 || compras > 0 || tieneVentas) {
+      setShowBienvenida(false);
+      return;
+    }
+
+    // Regla 5: Si el usuario ya lo descartó previamente en esta cuenta o navegador, NUNCA mostrarlo
+    const emailKey = session?.user?.email
+      ? `qhubomor_onboarding_dismissed_${session.user.email}`
+      : 'qhubomor_onboarding_dismissed';
+    const yaDescartado =
+      localStorage.getItem(emailKey) === 'true' ||
+      localStorage.getItem('qhubomor_onboarding_dismissed') === 'true';
+
+    if (yaDescartado) {
+      setShowBienvenida(false);
+      return;
+    }
+
+    // Solo si superó todos los filtros (cliente nuevo, sin teléfono, sin cédula, sin compras y no descartado)
+    setShowBienvenida(true);
+  }, [searchParams, status, session, cliente]);
 
   // 3. Si no hay sesión, revisar si hay identificador guardado previamente
   useEffect(() => {
@@ -292,6 +328,9 @@ function FidelidadContent() {
 
       if (typeof window !== 'undefined') {
         localStorage.setItem('qhubomor_onboarding_dismissed', 'true');
+        if (session?.user?.email) {
+          localStorage.setItem(`qhubomor_onboarding_dismissed_${session.user.email}`, 'true');
+        }
       }
 
       setShowBienvenida(false);
@@ -317,6 +356,9 @@ function FidelidadContent() {
   const handleCerrarOnboardingComoNuevo = () => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('qhubomor_onboarding_dismissed', 'true');
+      if (session?.user?.email) {
+        localStorage.setItem(`qhubomor_onboarding_dismissed_${session.user.email}`, 'true');
+      }
     }
     setShowBienvenida(false);
   };
