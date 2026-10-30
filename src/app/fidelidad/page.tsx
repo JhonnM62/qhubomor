@@ -110,29 +110,22 @@ function FidelidadContent() {
   useEffect(() => {
     if (typeof window === 'undefined' || status === 'loading') return;
 
-    // Limpieza inmediata del query param para no re-disparar en recargas o historial
-    if (searchParams?.get('bienvenida')) {
-      try {
-        const url = new URL(window.location.href);
-        url.searchParams.delete('bienvenida');
-        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
-      } catch {}
-    }
-
     // Regla 1: Solo aplica para usuarios autenticados
-    if (status !== 'authenticated') {
+    if (status !== 'authenticated' || !session?.user?.email) {
       setShowBienvenida(false);
       return;
     }
 
-    // Regla 2: Esperar a que el cliente termine de cargar para evaluar su perfil real
-    if (!cliente) {
+    // Regla 2: Esperar a que el perfil del cliente termine de cargar completamente
+    if (!cliente || loading) {
       return;
     }
 
     // Regla 3: Si el cliente ya tiene WhatsApp o Cédula vinculados, NUNCA mostrarlo
-    const tieneWhatsapp = Boolean(cliente.whatsapp && cliente.whatsapp.trim().length >= 7);
-    const tieneCedula = Boolean(cliente.cedula && String(cliente.cedula).trim().length >= 5);
+    const cleanWhatsapp = (cliente.whatsapp || '').trim().replace(/\D/g, '');
+    const cleanCedula = String(cliente.cedula || '').trim().replace(/\D/g, '');
+    const tieneWhatsapp = cleanWhatsapp.length >= 7;
+    const tieneCedula = cleanCedula.length >= 5;
     if (tieneWhatsapp || tieneCedula) {
       setShowBienvenida(false);
       return;
@@ -147,22 +140,34 @@ function FidelidadContent() {
       return;
     }
 
-    // Regla 5: Si el usuario ya lo descartó previamente en esta cuenta o navegador, NUNCA mostrarlo
-    const emailKey = session?.user?.email
-      ? `qhubomor_onboarding_dismissed_${session.user.email}`
-      : 'qhubomor_onboarding_dismissed';
-    const yaDescartado =
-      localStorage.getItem(emailKey) === 'true' ||
-      localStorage.getItem('qhubomor_onboarding_dismissed') === 'true';
+    // Regla 5: Si el usuario ya lo descartó previamente en su cuenta, NUNCA mostrarlo
+    const userEmail = (session.user.email || '').toLowerCase().trim();
+    const yaDescartadoEnCuenta = userEmail
+      ? localStorage.getItem(`qhubomor_onboarding_dismissed_${userEmail}`) === 'true'
+      : false;
 
-    if (yaDescartado) {
+    if (yaDescartadoEnCuenta) {
       setShowBienvenida(false);
       return;
     }
 
-    // Solo si superó todos los filtros (cliente nuevo, sin teléfono, sin cédula, sin compras y no descartado)
+    // Limpieza de URL: Si venía ?bienvenida=true, se limpia para no quedar en el historial ni en recargas
+    if (window.location.search.includes('bienvenida')) {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('bienvenida');
+        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+      } catch {}
+    }
+
+    // Cumple todas las condiciones estrictamente:
+    // 1. Está autenticado.
+    // 2. Su perfil ya terminó de cargar.
+    // 3. No tiene WhatsApp ni Cédula.
+    // 4. Tiene 0 sellos y 0 compras.
+    // 5. Nunca lo ha cerrado o descartado antes en su cuenta.
     setShowBienvenida(true);
-  }, [searchParams, status, session, cliente]);
+  }, [status, session, cliente, loading]);
 
   // 3. Si no hay sesión, revisar si hay identificador guardado previamente
   useEffect(() => {
@@ -327,10 +332,15 @@ function FidelidadContent() {
       );
 
       if (typeof window !== 'undefined') {
-        localStorage.setItem('qhubomor_onboarding_dismissed', 'true');
-        if (session?.user?.email) {
-          localStorage.setItem(`qhubomor_onboarding_dismissed_${session.user.email}`, 'true');
+        const userEmail = (session?.user?.email || '').toLowerCase().trim();
+        if (userEmail) {
+          localStorage.setItem(`qhubomor_onboarding_dismissed_${userEmail}`, 'true');
         }
+        try {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('bienvenida');
+          window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+        } catch {}
       }
 
       setShowBienvenida(false);
@@ -355,10 +365,15 @@ function FidelidadContent() {
 
   const handleCerrarOnboardingComoNuevo = () => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('qhubomor_onboarding_dismissed', 'true');
-      if (session?.user?.email) {
-        localStorage.setItem(`qhubomor_onboarding_dismissed_${session.user.email}`, 'true');
+      const userEmail = (session?.user?.email || '').toLowerCase().trim();
+      if (userEmail) {
+        localStorage.setItem(`qhubomor_onboarding_dismissed_${userEmail}`, 'true');
       }
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('bienvenida');
+        window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+      } catch {}
     }
     setShowBienvenida(false);
   };
