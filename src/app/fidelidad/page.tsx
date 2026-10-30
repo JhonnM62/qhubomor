@@ -273,7 +273,15 @@ function FidelidadContent() {
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || 'No se pudo vincular la cuenta');
+        let msg = 'No se ha encontrado en la base de datos ninguna cuenta con ese número de WhatsApp o identificación. Revisa tu número de WhatsApp o identificación.';
+        if (typeof data.error === 'string') {
+          msg = data.error;
+        } else if (typeof data.message === 'string') {
+          msg = data.message;
+        } else if (Array.isArray(data.message)) {
+          msg = data.message.join(', ');
+        }
+        throw new Error(msg);
       }
 
       toast.success(
@@ -297,7 +305,10 @@ function FidelidadContent() {
         fetchCliente(activeIdentificador);
       }
     } catch (err: any) {
-      setOnboardingError(err.message || 'Error al vincular tu cuenta');
+      const msg = typeof err?.message === 'string'
+        ? err.message
+        : 'No se ha encontrado en la base de datos ninguna cuenta con ese número de WhatsApp o identificación. Revisa tu número de WhatsApp o identificación.';
+      setOnboardingError(msg);
     } finally {
       setOnboardingSaving(false);
     }

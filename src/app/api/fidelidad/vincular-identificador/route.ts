@@ -37,8 +37,11 @@ export async function POST(req: Request) {
     });
 
     if (!resErp.success) {
+      const errStr = typeof resErp.error === 'string'
+        ? resErp.error
+        : 'No se ha encontrado en la base de datos ninguna cuenta con ese número de WhatsApp o identificación. Revisa tu número de WhatsApp o documento.';
       return NextResponse.json(
-        { success: false, error: resErp.error || 'Error al vincular identificador en el sistema.' },
+        { success: false, error: errStr },
         { status: 400 }
       );
     }

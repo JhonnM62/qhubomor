@@ -92,7 +92,15 @@ export function DigitalLoyaltyCard({
       });
       const data = await res.json();
       if (!res.ok || !data.success) {
-        throw new Error(data.error || 'No se pudo vincular el identificador');
+        let msg = 'No se ha encontrado en la base de datos ninguna cuenta con ese número de WhatsApp o identificación. Revisa tu número de WhatsApp o documento.';
+        if (typeof data.error === 'string') {
+          msg = data.error;
+        } else if (typeof data.message === 'string') {
+          msg = data.message;
+        } else if (Array.isArray(data.message)) {
+          msg = data.message.join(', ');
+        }
+        throw new Error(msg);
       }
 
       toast.success(
@@ -103,7 +111,10 @@ export function DigitalLoyaltyCard({
       setShowVincularModal(false);
       onCedulaActualizada?.();
     } catch (err: any) {
-      setModalError(err.message || 'Error al guardar el identificador');
+      const msg = typeof err?.message === 'string'
+        ? err.message
+        : 'No se ha encontrado en la base de datos ninguna cuenta con ese número de WhatsApp o identificación. Revisa tu número de WhatsApp o documento.';
+      setModalError(msg);
     } finally {
       setSavingIdentificador(false);
     }

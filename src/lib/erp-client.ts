@@ -263,9 +263,17 @@ export async function vincularIdentificadorCliente(
 
     const json = await res.json();
     if (!res.ok) {
+      let errorMsg = 'Error al vincular identificador en el ERP';
+      if (typeof json?.message === 'string') {
+        errorMsg = json.message;
+      } else if (Array.isArray(json?.message)) {
+        errorMsg = json.message.join(', ');
+      } else if (typeof json?.error === 'string') {
+        errorMsg = json.error;
+      }
       return {
         success: false,
-        error: json?.message || json?.error || 'Error al vincular identificador en el ERP',
+        error: errorMsg,
       };
     }
 
