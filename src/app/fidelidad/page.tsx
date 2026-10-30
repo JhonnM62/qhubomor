@@ -15,7 +15,6 @@ import {
   ArrowRight,
   RefreshCw,
   Sparkles,
-  ShieldAlert,
   MapPin,
   CheckCircle2,
   Gift,
@@ -28,10 +27,14 @@ import {
   LayoutDashboard,
   LogIn,
   UserPlus,
-  QrCode,
   Flame,
   ChevronDown,
-  Lock,
+  Phone,
+  CreditCard,
+  Link2,
+  Info,
+  Loader2,
+  AlertTriangle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -46,12 +49,17 @@ function FidelidadContent() {
   const [cliente, setCliente] = useState<FidelidadClienteResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Modal de bienvenida al iniciar sesión o registrarse
+  // Modal de bienvenida / unificación inicial de cuenta
   const [showBienvenida, setShowBienvenida] = useState(false);
   const [codigoGenerado, setCodigoGenerado] = useState<number | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
 
-  // Estado para alternar el buscador manual si no está logeado
+  // Estados para vinculación / unificación en el onboarding modal
+  const [onboardingInput, setOnboardingInput] = useState('');
+  const [onboardingSaving, setOnboardingSaving] = useState(false);
+  const [onboardingError, setOnboardingError] = useState('');
+
+  // Estado para alternar el buscador manual si está logeado
   const [showManualSearch, setShowManualSearch] = useState(false);
 
   // 1. Sincronizar automáticamente el usuario con el ERP al tener sesión iniciada
@@ -98,12 +106,27 @@ function FidelidadContent() {
     syncClienteConErp();
   }, [status, session]);
 
-  // 2. Activar modal de bienvenida si el query param es ?bienvenida=true
+  // 2. Activar modal de bienvenida / unificación si el query param es ?bienvenida=true o cliente sin identificación
   useEffect(() => {
     if (searchParams?.get('bienvenida') === 'true') {
       setShowBienvenida(true);
+      return;
     }
-  }, [searchParams]);
+
+    // Si ya cargó el cliente y no tiene WhatsApp ni Cédula vinculados, preguntar una vez si tiene pedidos previos
+    if (
+      status === 'authenticated' &&
+      cliente &&
+      !cliente.whatsapp &&
+      !cliente.cedula &&
+      typeof window !== 'undefined'
+    ) {
+      const yaPreguntado = localStorage.getItem('qhubomor_onboarding_dismissed');
+      if (!yaPreguntado) {
+        setShowBienvenida(true);
+      }
+    }
+  }, [searchParams, status, cliente]);
 
   // 3. Si no hay sesión, revisar si hay identificador guardado previamente
   useEffect(() => {
@@ -133,7 +156,7 @@ function FidelidadContent() {
       );
       if (!res.ok) {
         if (res.status === 404) {
-          if (!isSilent) toast.error('No se encontró cliente con esa cédula o código en el POS.');
+          if (!isSilent) toast.error('No se encontró cliente con esa cédula, WhatsApp o código en el POS.');
           setCliente(null);
           return;
         }
@@ -216,7 +239,7 @@ function FidelidadContent() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!identificadorInput.trim()) {
-      toast.error('Ingresa tu cédula o código oficial de cliente.');
+      toast.error('Ingresa tu número de WhatsApp, cédula o código oficial de cliente.');
       return;
     }
     setActiveIdentificador(identificadorInput.trim());
@@ -229,6 +252,62 @@ function FidelidadContent() {
     setCopiedCode(true);
     toast.success('¡Código copiado al portapapeles!');
     setTimeout(() => setCopiedCode(false), 2000);
+  };
+
+  // Manejo de vinculación en el modal inicial
+  const handleVincularEnOnboarding = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = onboardingInput.trim().replace(/\D/g, '');
+    if (!clean || clean.length < 5 || clean.length > 15) {
+      setOnboardingError('Ingresa un número válido de WhatsApp o Cédula (entre 5 y 15 dígitos).');
+      return;
+    }
+
+    setOnboardingSaving(true);
+    setOnboardingError('');
+    try {
+      const res = await fetch('/api/fidelidad/vincular-identificador', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identificador: clean }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'No se pudo vincular la cuenta');
+      }
+
+      toast.success(
+        data.merged
+          ? '¡Pedidos anteriores y sellos acumulados recuperados con éxito!'
+          : '¡Identificador vinculado exitosamente!'
+      );
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('qhubomor_onboarding_dismissed', 'true');
+      }
+
+      setShowBienvenida(false);
+
+      if (data.cliente?.IDcliente) {
+        const nuevoId = String(data.cliente.IDcliente);
+        setActiveIdentificador(nuevoId);
+        setCodigoGenerado(data.cliente.IDcliente);
+        fetchCliente(nuevoId);
+      } else if (activeIdentificador) {
+        fetchCliente(activeIdentificador);
+      }
+    } catch (err: any) {
+      setOnboardingError(err.message || 'Error al vincular tu cuenta');
+    } finally {
+      setOnboardingSaving(false);
+    }
+  };
+
+  const handleCerrarOnboardingComoNuevo = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('qhubomor_onboarding_dismissed', 'true');
+    }
+    setShowBienvenida(false);
   };
 
   return (
@@ -433,7 +512,7 @@ function FidelidadContent() {
                     type="text"
                     value={identificadorInput}
                     onChange={(e) => setIdentificadorInput(e.target.value)}
-                    placeholder="Ingresa cédula o código"
+                    placeholder="Ingresa WhatsApp, cédula o código"
                     className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
                   />
                   <button
@@ -561,10 +640,10 @@ function FidelidadContent() {
             <div className="space-y-1">
               <h4 className="text-sm font-bold text-zinc-300 flex items-center justify-center gap-1.5">
                 <Search className="w-4 h-4 text-amber-400" />
-                <span>¿Ya tienes un código y solo quieres consultar?</span>
+                <span>¿Ya tienes una cuenta o pedidos anteriores?</span>
               </h4>
               <p className="text-xs text-zinc-500">
-                Ingresa tu número de cédula o código para consultar tu progreso sin iniciar sesión:
+                Ingresa tu número de WhatsApp, Cédula o Código POS para consultar tu progreso sin iniciar sesión:
               </p>
             </div>
 
@@ -573,7 +652,7 @@ function FidelidadContent() {
                 type="text"
                 value={identificadorInput}
                 onChange={(e) => setIdentificadorInput(e.target.value)}
-                placeholder="Ej: 50934 o Cédula"
+                placeholder="Ingresa tu número de WhatsApp, Cédula o Código POS"
                 className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs sm:text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
               />
               <button
@@ -587,82 +666,130 @@ function FidelidadContent() {
 
             {cliente && (
               <div className="pt-4 text-left">
-                <DigitalLoyaltyCard cliente={cliente} isRealtimeConnected={isConnected} />
+                <DigitalLoyaltyCard
+                  cliente={cliente}
+                  isRealtimeConnected={isConnected}
+                  onCedulaActualizada={() => activeIdentificador && fetchCliente(activeIdentificador)}
+                />
               </div>
             )}
           </section>
         </main>
       )}
 
-      {/* ========================================================= */}
-      {/* MODAL CELEBRATORIO DE BIENVENIDA TRAS REGISTRO / LOGIN */}
-      {/* ========================================================= */}
+      {/* ========================================================================= */}
+      {/* MODAL DE BIENVENIDA / ONBOARDING: SINCRONIZACIÓN Y UNIFICACIÓN DE PUNTOS */}
+      {/* ========================================================================= */}
       {showBienvenida && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="relative w-full max-w-md rounded-3xl p-6 sm:p-8 bg-zinc-950 border-2 border-amber-500/50 text-center shadow-2xl shadow-amber-500/20 overflow-hidden space-y-5">
+          <div className="relative w-full max-w-md rounded-3xl p-6 sm:p-8 bg-zinc-950 border-2 border-amber-500/50 text-left shadow-2xl shadow-amber-500/20 overflow-hidden space-y-5">
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/20 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-orange-500/20 rounded-full blur-3xl pointer-events-none" />
 
             <button
-              onClick={() => setShowBienvenida(false)}
+              onClick={handleCerrarOnboardingComoNuevo}
               className="absolute top-4 right-4 p-2 rounded-full bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
 
-            <div className="w-16 h-16 rounded-3xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center mx-auto text-amber-400 shadow-lg shadow-amber-500/10">
-              <Sparkles className="w-8 h-8 text-amber-400 animate-bounce" />
-            </div>
-
-            <div>
-              <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-400 block mb-1">
-                ¡Bienvenido a Q&apos;hubo Mor!
-              </span>
-              <h3 className="text-2xl sm:text-3xl font-black text-white leading-tight">
-                {session?.user?.name ? `¡Hola, ${session.user.name}!` : '¡Ya eres Miembro VIP!'}
-              </h3>
-              <p className="text-xs sm:text-sm text-zinc-300 mt-2 leading-relaxed">
-                Tu cuenta ha sido creada y sincronizada con el sistema del restaurante.
-              </p>
-            </div>
-
-            {/* Código generado destacado */}
-            <div className="p-4 rounded-2xl bg-zinc-900/90 border border-amber-500/40 space-y-2">
-              <span className="text-[11px] uppercase tracking-wider font-bold text-zinc-400 block">
-                Tu Código Oficial de Cliente
-              </span>
-              <div className="flex items-center justify-center gap-3">
-                <span className="text-3xl font-black font-mono text-amber-400 tracking-wider">
-                  #{codigoGenerado || cliente?.IDcliente || '------'}
+            {/* Cabecera */}
+            <div className="flex items-center gap-3.5">
+              <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0 shadow-lg shadow-amber-500/10">
+                <Link2 className="w-7 h-7 text-amber-400" />
+              </div>
+              <div>
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-amber-400 block">
+                  Club Privilege Q&apos;hubo Mor
                 </span>
+                <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
+                  ¿Has pedido antes con nosotros?
+                </h3>
+              </div>
+            </div>
+
+            <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+              Si ya has pedido a <strong className="text-white">domicilio por WhatsApp</strong> o en el <strong className="text-white">restaurante</strong>, ingresa tu número o documento para recuperar tus sellos acumulados y activar tus premios de inmediato.
+            </p>
+
+            {onboardingError && (
+              <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{onboardingError}</span>
+              </div>
+            )}
+
+            {/* Formulario de vinculación inmediata */}
+            <form onSubmit={handleVincularEnOnboarding} className="space-y-3">
+              <div>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
+                  Número de WhatsApp o Cédula
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+                    <Phone className="w-4 h-4" />
+                  </div>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    value={onboardingInput}
+                    onChange={(e) => {
+                      setOnboardingInput(e.target.value.replace(/\D/g, ''));
+                      setOnboardingError('');
+                    }}
+                    placeholder="Ej: 3044430427 o tu Cédula"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl bg-zinc-900 border border-zinc-700 text-white font-mono text-sm placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={onboardingSaving}
+                className="w-full py-3.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black font-extrabold text-xs sm:text-sm transition-all shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2"
+              >
+                {onboardingSaving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Recuperando tus puntos...</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    <span>Vincular y Cargar mis Puntos</span>
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Separador / Opción para cliente nuevo */}
+            <div className="pt-2 border-t border-zinc-800/80 space-y-3 text-center">
+              <div className="p-3 rounded-xl bg-zinc-900/70 border border-zinc-800 flex items-center justify-between text-left">
+                <div>
+                  <span className="text-[10px] uppercase font-bold text-zinc-500 block">
+                    Tu Nuevo Código POS Asignado
+                  </span>
+                  <span className="text-lg font-black font-mono text-amber-400">
+                    #{codigoGenerado || cliente?.IDcliente || '------'}
+                  </span>
+                </div>
                 <button
+                  type="button"
                   onClick={handleCopyCode}
-                  className="p-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 transition-colors"
+                  className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 transition-colors"
                   title="Copiar código"
                 >
-                  {copiedCode ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  {copiedCode ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
               </div>
-              <p className="text-[11px] text-zinc-400">
-                Solo debes dictar este código en caja o mencionarlo en tus pedidos a domicilio para acumular sellos y canjear tu granizado gratis.
-              </p>
-            </div>
 
-            {/* Acciones */}
-            <div className="space-y-2.5 pt-2">
-              <Link
-                href="/misiones"
-                onClick={() => setShowBienvenida(false)}
-                className="w-full py-3.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm transition-all shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2"
-              >
-                <span>Ganar mis primeros sellos en Misiones 🚀</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
               <button
-                onClick={() => setShowBienvenida(false)}
-                className="w-full py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold transition-colors"
+                type="button"
+                onClick={handleCerrarOnboardingComoNuevo}
+                className="w-full py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold border border-zinc-800 transition-colors flex items-center justify-center gap-2"
               >
-                Ver Mi Tarjeta Digital
+                <Check className="w-3.5 h-3.5 text-zinc-400" />
+                <span>Soy cliente nuevo (Empezar desde cero)</span>
               </button>
             </div>
           </div>

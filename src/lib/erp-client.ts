@@ -234,3 +234,53 @@ export async function actualizarCedulaCliente(
     };
   }
 }
+
+export interface VincularIdentificadorPayload {
+  email: string;
+  identificador: string;
+  nombre?: string;
+}
+
+export interface VincularIdentificadorResponse {
+  success: boolean;
+  message?: string;
+  error?: string;
+  cliente?: any;
+  merged?: boolean;
+}
+
+export async function vincularIdentificadorCliente(
+  payload: VincularIdentificadorPayload
+): Promise<VincularIdentificadorResponse> {
+  try {
+    const res = await fetch(`${ERP_BASE_URL}/clientes/fidelidad/vincular-identificador`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const json = await res.json();
+    if (!res.ok) {
+      return {
+        success: false,
+        error: json?.message || json?.error || 'Error al vincular identificador en el ERP',
+      };
+    }
+
+    const data = json?.data ?? json;
+    return {
+      success: true,
+      message: data?.message || 'Identificador vinculado exitosamente',
+      cliente: data?.cliente ?? data,
+      merged: data?.merged,
+    };
+  } catch (err: any) {
+    console.error('Error al vincular identificador en ERP:', err);
+    return {
+      success: false,
+      error: err.message || 'Error de conexión con el servidor ERP',
+    };
+  }
+}
