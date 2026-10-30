@@ -130,12 +130,17 @@ export default function Gallery({ images }: { images: GalleryImage[] }) {
             className="group relative aspect-square overflow-hidden rounded-xl bg-gray-900 border border-white/10 cursor-pointer shadow-md hover:shadow-xl transition-all hover:scale-[1.02]"
             onClick={() => handleOpenImage(img)}
           >
+            {/* Skeleton visible mientras la imagen carga (queda debajo de la imagen) */}
+            <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-gray-800 via-gray-900 to-gray-800" aria-hidden="true" />
             <Image
               src={img.src}
               alt={img.alt}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-110"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              // Coincide con la cuadrícula real: 1 / 2 / 3 / 4 columnas
+              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              // La primera fila visible se carga con prioridad; el resto en diferido
+              priority={index < 4}
             />
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
               <Maximize2 className="text-white w-8 h-8 drop-shadow-md" />

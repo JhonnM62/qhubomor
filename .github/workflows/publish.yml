@@ -91,13 +91,15 @@ jobs:
             PROJECT_DIR="$HOME/proyectos/$REPO_NAME"
             mkdir -p ${PROJECT_DIR}/data
             mkdir -p ${PROJECT_DIR}/uploads
+            # Caché de Next.js (imágenes optimizadas por sharp) persistente entre despliegues
+            mkdir -p ${PROJECT_DIR}/next-cache
             echo '${{ secrets.ENV_FILE_CONTENT }}' > ${PROJECT_DIR}/.env
             # Eliminar comillas dobles en el servidor también
             sed -i 's/"//g' ${PROJECT_DIR}/.env
 
             # Asegurar permisos correctos (777 y UID 1001) para que el contenedor Next.js pueda escribir
-            chmod -R 777 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads 2>/dev/null || true
-            chown -R 1001:1001 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads 2>/dev/null || true
+            chmod -R 777 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads ${PROJECT_DIR}/next-cache 2>/dev/null || true
+            chown -R 1001:1001 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads ${PROJECT_DIR}/next-cache 2>/dev/null || true
 
             # Login al registry con usuario en minúsculas
             echo ${{ secrets.TOKEN_QHUBOMOR }} | docker login ghcr.io -u "$GITHUB_ACTOR_LOWER" --password-stdin
@@ -112,9 +114,21 @@ jobs:
             docker rm -f $TEMP_CONTAINER 2>/dev/null || true
             docker create --name $TEMP_CONTAINER $IMAGE_URL
             
-            # Sincronizar catálogo inicial sin sobreescribir archivos del usuario
+            rm -rf /tmp/sync_uploads
             mkdir -p /tmp/sync_uploads
             docker cp $TEMP_CONTAINER:/app/public/uploads/. /tmp/sync_uploads/ 2>/dev/null || true
+
+            # Carpetas de catálogo gestionadas por el repo: espejo exacto (reemplaza y elimina archivos viejos)
+            for CATALOG_DIR in cartas imagenesproductos; do
+                if [ -d "/tmp/sync_uploads/${CATALOG_DIR}" ] && [ -n "$(ls -A /tmp/sync_uploads/${CATALOG_DIR} 2>/dev/null)" ]; then
+                    echo "Espejando catálogo: ${CATALOG_DIR}"
+                    rm -rf "${PROJECT_DIR}/uploads/${CATALOG_DIR}"
+                    cp -r "/tmp/sync_uploads/${CATALOG_DIR}" "${PROJECT_DIR}/uploads/${CATALOG_DIR}"
+                    rm -rf "/tmp/sync_uploads/${CATALOG_DIR}"
+                fi
+            done
+
+            # Resto de uploads (archivos del usuario): copiar solo lo que falta, sin sobreescribir
             cp -rn /tmp/sync_uploads/* ${PROJECT_DIR}/uploads/ 2>/dev/null || true
             rm -rf /tmp/sync_uploads
             
@@ -128,8 +142,8 @@ jobs:
             docker rm -f $TEMP_CONTAINER 2>/dev/null || true
 
             # Asegurar permisos correctos (777 y UID 1001) sobre los datos copiados
-            chmod -R 777 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads 2>/dev/null || true
-            chown -R 1001:1001 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads 2>/dev/null || true
+            chmod -R 777 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads ${PROJECT_DIR}/next-cache 2>/dev/null || true
+            chown -R 1001:1001 ${PROJECT_DIR}/data ${PROJECT_DIR}/uploads ${PROJECT_DIR}/next-cache 2>/dev/null || true
             
             # Detener y eliminar contenedor anterior si existe (tanto el nuevo como el anterior)
             CONTAINER_NAME="qhubomor-bussines-page"
@@ -148,6 +162,7 @@ jobs:
               -v ${PROJECT_DIR}/data:/app/prisma/data \
               -v ${PROJECT_DIR}/data:/app/data \
               -v ${PROJECT_DIR}/uploads:/app/public/uploads \
+              -v ${PROJECT_DIR}/next-cache:/app/.next/cache \
               $IMAGE_URL
               
             # Verificar que el contenedor esté corriendo
@@ -167,6 +182,21 @@ jobs:
                     sleep 3
                 done
                 
+                # Warm-up en segundo plano: genera/valida en caché las variantes WebP de la galería
+                # (no alarga el deploy; con la caché persistente solo procesa imágenes nuevas)
+                echo "Iniciando warm-up de imágenes de la galería en segundo plano..."
+                (
+                    trap '' HUP
+                    sleep 5
+                    curl -s http://localhost:8050/galeria \
+                      | grep -oE '/_next/image\?url=[^" ,]+' \
+                      | sed 's/&amp;/\&/g' \
+                      | grep -v 'w=3840' \
+                      | sort -u \
+                      | xargs -P 2 -I{} curl -s -o /dev/null -H 'Accept: image/webp' -w '%{http_code} %{time_total}s {}\n' "http://localhost:8050{}"
+                    echo "Warm-up finalizado: $(date)"
+                ) > /tmp/qhubomor-warmup.log 2>&1 < /dev/null &
+
                 echo "--- Logs recientes del contenedor ---"
                 docker logs --tail 30 $CONTAINER_NAME
             else
