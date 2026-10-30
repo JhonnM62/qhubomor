@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { StampGrid } from './StampGrid';
 import { FidelidadClienteResponse } from '@/lib/erp-client';
+import { VinculacionResultData } from './VinculacionResultModal';
 import {
   Sparkles,
   QrCode,
@@ -28,7 +29,7 @@ import { toast } from 'sonner';
 interface DigitalLoyaltyCardProps {
   cliente: FidelidadClienteResponse;
   isRealtimeConnected?: boolean;
-  onCedulaActualizada?: (nuevoId?: number) => void;
+  onCedulaActualizada?: (nuevoId?: number, resultData?: VinculacionResultData) => void;
 }
 
 export function DigitalLoyaltyCard({
@@ -103,18 +104,16 @@ export function DigitalLoyaltyCard({
         throw new Error(msg);
       }
 
-      if (data.encontrado || data.merged) {
-        toast.success(
-          data.message || '¡Cuenta y pedidos anteriores unificados exitosamente!'
-        );
-      } else {
-        toast.info(
-          data.message || 'No se encontraron compras anteriores con ese número, pero tu identificación ha sido vinculada con éxito a tu cuenta.',
-          { duration: 6000 }
-        );
-      }
       setShowVincularModal(false);
-      onCedulaActualizada?.(data.cliente?.IDcliente);
+      onCedulaActualizada?.(data.cliente?.IDcliente, {
+        encontrado: Boolean(data.encontrado || data.merged),
+        codigoPos: data.cliente?.IDcliente || cliente.IDcliente,
+        identificador: clean,
+        nombre: data.cliente?.nombre || cliente.nombre,
+        contador: data.cliente?.contador ?? cliente.contador,
+        comprasTotales: data.cliente?.comprasTotales ?? cliente.comprasTotales,
+        message: data.message,
+      });
     } catch (err: any) {
       const msg = typeof err?.message === 'string'
         ? err.message

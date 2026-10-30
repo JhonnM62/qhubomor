@@ -37,6 +37,7 @@ import {
   AlertTriangle,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { VinculacionResultModal, VinculacionResultData } from '@/components/fidelidad/VinculacionResultModal';
 
 function FidelidadContent() {
   const searchParams = useSearchParams();
@@ -53,6 +54,10 @@ function FidelidadContent() {
   const [showBienvenida, setShowBienvenida] = useState(false);
   const [codigoGenerado, setCodigoGenerado] = useState<number | null>(null);
   const [copiedCode, setCopiedCode] = useState(false);
+
+  // Pop-up llamativo de resultado de búsqueda / vinculación
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [resultModalData, setResultModalData] = useState<VinculacionResultData | null>(null);
 
   // Estados para vinculación / unificación en el onboarding modal
   const [onboardingInput, setOnboardingInput] = useState('');
@@ -335,20 +340,24 @@ function FidelidadContent() {
           }
           fetchCliente(String(nuevoId));
         }
-        toast.success(
-          data.message || `¡Cuenta encontrada! Tu código POS asignado se actualizó a #${nuevoId} con todos tus sellos y compras acumuladas.`
-        );
       } else {
         // Si no se encontró en la base de datos -> Alerta informativa de que no se encontró y que se registró el número/identificación
         const idActual = data.cliente?.IDcliente || codigoGenerado || cliente?.IDcliente;
         if (idActual) {
           fetchCliente(String(idActual));
         }
-        toast.info(
-          data.message || 'No se encontraron compras anteriores con ese número, pero tu identificación ha sido vinculada con éxito a tu cuenta.',
-          { duration: 7000 }
-        );
       }
+
+      // Preparar datos para el pop-up llamativo de resultado
+      const resultData: VinculacionResultData = {
+        encontrado: Boolean(data.encontrado || data.merged),
+        codigoPos: data.cliente?.IDcliente || codigoGenerado || cliente?.IDcliente || '------',
+        identificador: clean,
+        nombre: data.cliente?.nombre || cliente?.nombre,
+        contador: data.cliente?.contador ?? cliente?.contador ?? 0,
+        comprasTotales: data.cliente?.comprasTotales ?? cliente?.comprasTotales ?? 0,
+        message: data.message,
+      };
 
       if (typeof window !== 'undefined') {
         const userEmail = (session?.user?.email || '').toLowerCase().trim();
@@ -363,6 +372,8 @@ function FidelidadContent() {
       }
 
       setShowBienvenida(false);
+      setResultModalData(resultData);
+      setShowResultModal(true);
     } catch (err: any) {
       const msg = typeof err?.message === 'string'
         ? err.message
@@ -499,7 +510,7 @@ function FidelidadContent() {
                   <DigitalLoyaltyCard
                     cliente={cliente}
                     isRealtimeConnected={isConnected}
-                    onCedulaActualizada={(nuevoId?: number) => {
+                    onCedulaActualizada={(nuevoId?: number, resultData?: VinculacionResultData) => {
                       if (nuevoId) {
                         setCodigoGenerado(nuevoId);
                         setActiveIdentificador(String(nuevoId));
@@ -510,6 +521,11 @@ function FidelidadContent() {
                         fetchCliente(String(nuevoId));
                       } else if (activeIdentificador) {
                         fetchCliente(activeIdentificador);
+                      }
+
+                      if (resultData) {
+                        setResultModalData(resultData);
+                        setShowResultModal(true);
                       }
                     }}
                   />
@@ -885,6 +901,13 @@ function FidelidadContent() {
           </div>
         </div>
       )}
+
+      {/* Pop-up llamativo con animaciones y colores según resultado de búsqueda */}
+      <VinculacionResultModal
+        isOpen={showResultModal}
+        onClose={() => setShowResultModal(false)}
+        data={resultModalData}
+      />
     </div>
   );
 }
